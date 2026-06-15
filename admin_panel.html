@@ -233,17 +233,17 @@ const BG_COLORS=["rgba(217,72,84,0.18)","rgba(155,109,255,0.18)","rgba(62,207,14
 const DIAS_SEMANA=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const DIAS_ES=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[0,6];
+let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[];
 const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
 
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
 function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
 function getDefaultData(){return{agents:[
-  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[0,6]},
-  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[0,6]},
-  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[0,6]},
-  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[0,6]},
-  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[0,6]}
+  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[]},
+  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[]},
+  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[]},
+  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[]},
+  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[]}
 ],indisponibilidades:[],nextId:6};}
 
 function syncToSheets(data){
@@ -479,7 +479,7 @@ function renderIndisponibilidades(){
     </tr>`}).join("")||"<tr><td colspan='6' style='text-align:center;color:var(--text3);padding:32px'>Sin indisponibilidades</td></tr>";}
 
 function openModalAdd(airport){
-  libreSelDays=[0,6];
+  libreSelDays=[];
   document.getElementById("modal-agent-title").textContent="Nuevo comercial";
   document.getElementById("edit-id").value="";
   ["f-nombre","f-tel","f-email","f-pass"].forEach(id=>document.getElementById(id).value="");

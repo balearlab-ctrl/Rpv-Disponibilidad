@@ -19,8 +19,6 @@
   --radius:12px;--radius-sm:8px}
 html,body{height:100%;overscroll-behavior:none}
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh}
-
-/* LOGIN */
 #login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .login-logo-img{height:80px;width:auto;margin-bottom:18px}
 .login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:4px}
@@ -29,17 +27,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .login-card h2{font-size:15px;font-weight:600;margin-bottom:18px;text-align:center}
 .form-group{margin-bottom:14px}
 label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px}
-input[type=text],input[type=password],input[type=date],select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:12px 14px;font-size:15px;outline:none;transition:border .15s;-webkit-appearance:none}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:12px 14px;font-size:15px;outline:none;transition:border .15s;-webkit-appearance:none}
 input:focus,select:focus,textarea:focus{border-color:var(--brand)}
 select option{background:var(--bg3)}
-textarea{resize:vertical;min-height:70px}
+textarea{resize:vertical;min-height:70px;font-size:14px}
 .btn-full{width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
 .btn-primary{background:var(--brand);color:#fff}
 .btn-primary:active{opacity:.88}
-.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .login-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none}
-
-/* APP */
 #app-screen{display:none;flex-direction:column;min-height:100vh}
 .app-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .app-header-logo{height:32px;width:auto}
@@ -47,16 +43,12 @@ textarea{resize:vertical;min-height:70px}
 .app-header-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
 .app-header-name{font-size:13px;font-weight:600;color:var(--text)}
 .logout-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
-
 .bottom-nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;padding:6px 0 env(safe-area-inset-bottom,6px);position:sticky;bottom:0;z-index:50}
 .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;border:none;background:none;transition:color .15s}
 .bottom-nav-btn i{font-size:22px}
 .bottom-nav-btn.active{color:var(--brand)}
-
 .app-content{flex:1;overflow-y:auto;padding:18px 16px}
 .tab-page{display:none}.tab-page.active{display:block}
-
-/* STATUS BANNER */
 .status-banner{border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
 .status-banner.disponible{background:var(--green-bg);border:1px solid rgba(62,207,142,0.3)}
 .status-banner.libre{background:var(--amber-bg);border:1px solid rgba(245,166,35,0.3)}
@@ -66,8 +58,6 @@ textarea{resize:vertical;min-height:70px}
 .status-banner.no-disponible i{color:var(--red)}
 .banner-title{font-size:15px;font-weight:600}
 .banner-sub{font-size:12px;color:var(--text2);margin-top:2px}
-
-/* MINI CAL */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-header h3{font-size:14px;font-weight:600}
 .cal-nav-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px}
@@ -82,7 +72,6 @@ textarea{resize:vertical;min-height:70px}
 .mini-cal-cell.no-disp{background:var(--red-bg);color:var(--red);font-weight:700}
 .mini-cal-cell.no-disp-fija{background:rgba(229,83,75,.22);color:var(--red);font-weight:700}
 .mini-cal-cell.past{opacity:.35}
-
 .section-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2)}
@@ -90,11 +79,10 @@ textarea{resize:vertical;min-height:70px}
 .ld-libre{background:var(--amber-bg);border:1px solid var(--amber)}
 .ld-nodisp{background:var(--red-bg);border:1px solid var(--red)}
 .ld-fija{background:rgba(229,83,75,.22);border:1px solid var(--red)}
-
-/* INDISP CARDS */
 .indisp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
 .indisp-icon-wrap{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--red-bg);color:var(--red)}
 .indisp-icon-wrap.fija{background:rgba(229,83,75,.22)}
+.indisp-icon-wrap.libre{background:var(--amber-bg);color:var(--amber)}
 .indisp-body{flex:1}
 .indisp-name{font-size:14px;font-weight:600}
 .indisp-meta{font-size:12px;color:var(--text3);margin-top:3px}
@@ -103,8 +91,6 @@ textarea{resize:vertical;min-height:70px}
 .indisp-del:hover{color:var(--red)}
 .empty-state{text-align:center;padding:36px 16px;color:var(--text3);font-size:13px}
 .empty-state i{font-size:36px;display:block;margin-bottom:10px;opacity:.5}
-
-/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;padding:20px 20px env(safe-area-inset-bottom,16px)}
@@ -112,20 +98,18 @@ textarea{resize:vertical;min-height:70px}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:4px}
 .modal-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
 .modal-footer{display:flex;gap:10px;margin-top:20px}
-
-/* TIPO SELECTOR */
-.tipo-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
-.tipo-btn{padding:10px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text2);text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
-.tipo-btn.sel{border-color:var(--brand);background:var(--brand-bg);color:var(--brand-light)}
-.tipo-btn i{display:block;font-size:20px;margin-bottom:5px}
-
+.tipo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.tipo-btn{padding:12px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text2);text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.tipo-btn.sel-red{border-color:var(--brand);background:var(--brand-bg);color:var(--brand-light)}
+.tipo-btn.sel-amber{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
+.tipo-btn i{display:block;font-size:22px;margin-bottom:6px}
 .week-days-row{display:flex;gap:6px;flex-wrap:wrap}
 .week-day-chip{padding:8px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);user-select:none}
-.week-day-chip.sel{background:var(--red-bg);color:var(--red);border-color:var(--red)}
-.week-day-chip.libre-sel{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
-
-/* TEAM */
-.libres-info{background:var(--amber-bg);border:1px solid rgba(245,166,35,.3);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--amber);display:flex;gap:10px;align-items:flex-start}
+.week-day-chip.sel-red{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.week-day-chip.sel-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+.info-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.info-box.amber{background:var(--amber-bg);border:1px solid rgba(245,166,35,.3);color:var(--amber)}
+.info-box.blue{background:rgba(74,127,255,.1);border:1px solid rgba(74,127,255,.3);color:#7aaeff}
 .team-section{margin-bottom:22px}
 .team-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border)}
 .team-badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
@@ -137,13 +121,20 @@ textarea{resize:vertical;min-height:70px}
 .team-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 .team-agent-name{flex:1;font-size:13px;font-weight:500}
 .team-days{display:flex;gap:4px;flex-wrap:wrap}
-.team-day-libre{padding:3px 7px;border-radius:20px;font-size:10px;font-weight:600;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+.day-pill-libre{padding:3px 7px;border-radius:20px;font-size:10px;font-weight:600;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .pill-disponible{background:var(--green-bg);color:var(--green)}
 .pill-libre{background:var(--amber-bg);color:var(--amber)}
 .pill-no-disponible{background:var(--red-bg);color:var(--red)}
 .status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
-
+/* Días libres propios selector */
+.dias-libres-selector{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.dias-libres-selector h4{font-size:13px;font-weight:600;margin-bottom:4px}
+.dias-libres-selector p{font-size:12px;color:var(--text3);margin-bottom:12px}
+.dias-libres-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dia-libre-btn{aspect-ratio:1;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s;text-align:center}
+.dia-libre-btn.activo{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+.dia-libre-btn span{font-size:9px;opacity:.7}
 .modal-overlay.open .modal{animation:slideUp .22s ease}
 @keyframes slideUp{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
 </style>
@@ -183,47 +174,58 @@ textarea{resize:vertical;min-height:70px}
   </div>
 
   <div class="app-content">
+
+    <!-- HOME -->
     <div id="tab-home" class="tab-page active">
       <div id="home-status-banner"></div>
-      <div>
-        <div class="cal-header">
-          <div class="cal-nav-btn" onclick="miniCalPrev()"><i class="ti ti-chevron-left"></i></div>
-          <h3 id="mini-cal-label"></h3>
-          <div class="cal-nav-btn" onclick="miniCalNext()"><i class="ti ti-chevron-right"></i></div>
-        </div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot ld-libre"></div> Día libre</div>
-          <div class="legend-item"><div class="legend-dot ld-nodisp"></div> No disponible</div>
-          <div class="legend-item"><div class="legend-dot ld-fija"></div> Fija</div>
-        </div>
-        <div class="mini-cal" id="mini-cal"></div>
+      <div class="cal-header">
+        <div class="cal-nav-btn" onclick="miniCalPrev()"><i class="ti ti-chevron-left"></i></div>
+        <h3 id="mini-cal-label"></h3>
+        <div class="cal-nav-btn" onclick="miniCalNext()"><i class="ti ti-chevron-right"></i></div>
       </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot ld-libre"></div> Día libre fijo</div>
+        <div class="legend-item"><div class="legend-dot ld-nodisp"></div> No disponible</div>
+        <div class="legend-item"><div class="legend-dot ld-fija"></div> No disp. fija</div>
+      </div>
+      <div class="mini-cal" id="mini-cal"></div>
     </div>
 
+    <!-- NO DISPONIBLE -->
     <div id="tab-indisponibilidades" class="tab-page">
       <div class="section-title">Mis indisponibilidades</div>
+      <div class="info-box blue"><i class="ti ti-info-circle" style="font-size:18px;flex-shrink:0"></i><span>Registra aquí cuando no puedas trabajar: días puntuales, rangos de fechas o franjas horarias recurrentes. Tus compañeros y el coordinador lo verán.</span></div>
       <div id="my-indisp-list"></div>
-      <div style="margin-top:8px">
-        <button class="btn-outline" style="width:100%" onclick="openAddIndisp()"><i class="ti ti-plus"></i> Añadir indisponibilidad</button>
+      <button class="btn-outline" style="width:100%;margin-top:8px" onclick="openAddIndisp()"><i class="ti ti-plus"></i> Añadir indisponibilidad</button>
+    </div>
+
+    <!-- DÍAS LIBRES PROPIOS -->
+    <div id="tab-libres-propios" class="tab-page">
+      <div class="section-title">Mis días libres fijos</div>
+      <div class="info-box amber"><i class="ti ti-sun" style="font-size:18px;flex-shrink:0;margin-top:1px"></i><span>Marca los días que tienes libre de forma fija, acordados con el equipo. Quedarán marcados hasta que tú mismo los desactives.</span></div>
+      <div class="dias-libres-selector">
+        <h4>Toca para activar / desactivar</h4>
+        <p>Amarillo = día libre fijo confirmado</p>
+        <div class="dias-libres-grid" id="mis-dias-libres-grid"></div>
       </div>
+      <button class="btn-full btn-primary" onclick="guardarDiasLibres()"><i class="ti ti-check"></i> Guardar mis días libres</button>
+      <div id="save-libres-msg" style="text-align:center;font-size:13px;color:var(--green);margin-top:10px;display:none">✅ Días libres guardados</div>
     </div>
 
-    <div id="tab-libres" class="tab-page">
-      <div class="section-title">Días libres del equipo</div>
-      <div class="libres-info"><i class="ti ti-info-circle"></i><span>Días libres fijos acordados con el equipo. Para cambiar los tuyos, habla con el coordinador.</span></div>
-      <div id="team-libres-content"></div>
-    </div>
-
+    <!-- EQUIPO -->
     <div id="tab-equipo" class="tab-page">
       <div class="section-title" style="margin-bottom:14px">Disponibilidad hoy</div>
       <div id="team-today-content"></div>
+      <div class="section-title" style="margin-top:20px;margin-bottom:14px">Días libres del equipo</div>
+      <div id="team-libres-content"></div>
     </div>
+
   </div>
 
   <div class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="showTab('home',0)"><i class="ti ti-home"></i>Inicio</button>
     <button class="bottom-nav-btn" onclick="showTab('indisponibilidades',1)"><i class="ti ti-calendar-off"></i>No disponible</button>
-    <button class="bottom-nav-btn" onclick="showTab('libres',2)"><i class="ti ti-sun"></i>Días libres</button>
+    <button class="bottom-nav-btn" onclick="showTab('libres-propios',2)"><i class="ti ti-sun"></i>Mis libres</button>
     <button class="bottom-nav-btn" onclick="showTab('equipo',3)"><i class="ti ti-users"></i>Equipo</button>
   </div>
 </div>
@@ -234,27 +236,28 @@ textarea{resize:vertical;min-height:70px}
     <div class="modal-handle"></div>
     <div class="modal-title">Nueva indisponibilidad</div>
     <div class="modal-sub">Indica cuándo no podrás estar disponible</div>
-    <label style="margin-bottom:8px">Tipo</label>
+    <label style="margin-bottom:8px;display:block">Tipo</label>
     <div class="tipo-row">
-      <div class="tipo-btn sel" data-tipo="puntual" onclick="setTipo('puntual')"><i class="ti ti-calendar-event"></i>Día puntual</div>
-      <div class="tipo-btn" data-tipo="rango" onclick="setTipo('rango')"><i class="ti ti-calendar-stats"></i>Rango fechas</div>
-      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Fija semanal</div>
+      <div class="tipo-btn sel-red" data-tipo="puntual" onclick="setTipo('puntual')"><i class="ti ti-calendar-event"></i>Día puntual</div>
+      <div class="tipo-btn" data-tipo="rango" onclick="setTipo('rango')"><i class="ti ti-calendar-stats"></i>Rango de fechas</div>
+      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Fija semanal<br><span style="font-size:10px;opacity:.7">(recurrente)</span></div>
+      <div style="display:none"></div>
     </div>
-    <div id="indisp-puntual-fields">
+    <div id="f-puntual">
       <div class="form-group"><label>Fecha</label><input type="date" id="f-fecha-desde"></div>
     </div>
-    <div id="indisp-rango-fields" style="display:none">
+    <div id="f-rango" style="display:none">
       <div class="form-group"><label>Desde</label><input type="date" id="f-rango-desde"></div>
       <div class="form-group"><label>Hasta</label><input type="date" id="f-rango-hasta"></div>
     </div>
-    <div id="indisp-fija-fields" style="display:none">
-      <label style="margin-bottom:8px">Días de la semana</label>
+    <div id="f-fija" style="display:none">
+      <label style="margin-bottom:8px;display:block">Días de la semana</label>
       <div class="week-days-row" id="fija-days-row">
         <span class="week-day-chip" data-d="0">Dom</span><span class="week-day-chip" data-d="1">Lun</span><span class="week-day-chip" data-d="2">Mar</span><span class="week-day-chip" data-d="3">Mié</span><span class="week-day-chip" data-d="4">Jue</span><span class="week-day-chip" data-d="5">Vie</span><span class="week-day-chip" data-d="6">Sáb</span>
       </div>
     </div>
     <div class="form-group" style="margin-top:14px">
-      <label>Tramo horario (opcional)</label>
+      <label>Tramo horario <span style="color:var(--text3)">(opcional)</span></label>
       <select id="f-tramo">
         <option value="">Todo el día</option>
         <option value="Mañana (06:00-14:00)">Mañana (06:00-14:00)</option>
@@ -265,12 +268,12 @@ textarea{resize:vertical;min-height:70px}
       </select>
     </div>
     <div class="form-group">
-      <label>Motivo <span style="color:var(--text3)">(breve, ej: Curso formación)</span></label>
-      <input type="text" id="f-motivo" placeholder="Ej: Médico, Curso, Gestión personal...">
+      <label>Motivo <span style="color:var(--text3)">(breve)</span></label>
+      <input type="text" id="f-motivo" placeholder="Ej: Médico, Curso, Gestión...">
     </div>
     <div class="form-group">
-      <label>Descripción / Explicación <span style="color:var(--brand)" style="font-size:11px">★ visible para todos</span></label>
-      <textarea id="f-descripcion" placeholder="Explica por qué no puedes estar disponible este día/período. Esta información la verán tus compañeros y el coordinador."></textarea>
+      <label>Descripción <span style="color:var(--brand);font-size:11px">★ visible para todos</span></label>
+      <textarea id="f-descripcion" placeholder="Explica el motivo. Lo verán tus compañeros y el coordinador."></textarea>
     </div>
     <div class="modal-footer">
       <button class="btn-outline" style="flex:1" onclick="closeModal('modal-indisp')">Cancelar</button>
@@ -280,6 +283,7 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <script>
+const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbwVjK0rQU0sbsGTtLzYrTd-wFCxhKM1m0XSH4e6KrsTNIlvzJpJmD-Qcc3hEv0qaA22/exec",enabled:true};
 const COLORS=["#D94854","#9b6dff","#3ecf8e","#f5a623","#22d3ee","#f472b6","#a3e635","#60a5fa"];
 const BG_COLORS=["rgba(217,72,84,0.18)","rgba(155,109,255,0.18)","rgba(62,207,142,0.18)","rgba(245,166,35,0.18)","rgba(34,211,238,0.18)","rgba(244,114,182,0.18)","rgba(163,230,53,0.18)","rgba(96,165,250,0.18)"];
 const DIAS_SEMANA=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -288,62 +292,54 @@ const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","
 let currentAgent=null,miniCalYear,miniCalMonth,indispTipo="puntual",fijaDays=[];
 const now=new Date();miniCalYear=now.getFullYear();miniCalMonth=now.getMonth();
 
-const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbwVjK0rQU0sbsGTtLzYrTd-wFCxhKM1m0XSH4e6KrsTNIlvzJpJmD-Qcc3hEv0qaA22/exec",enabled:true};
-async function syncToSheets(data){
-  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
-  return new Promise((resolve)=>{
-    const id='rpv_save_'+Date.now();
-    window[id]=function(result){
-      const s=document.getElementById('jsonp_save_s');if(s)s.remove();
-      delete window[id];resolve();
-    };
-    const s=document.createElement('script');
-    s.id='jsonp_save_s';
-    s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
-    s.onerror=function(){
-      const se=document.getElementById('jsonp_save_s');if(se)se.remove();
-      delete window[id];resolve();
-    };
-    document.head.appendChild(s);
-  });
-}
-async function loadFromSheets(){
-  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
-  return new Promise((resolve)=>{
-    const id='rpv_'+Date.now();
-    window[id]=function(data){
-      try{
-        if(data&&data.agents&&data.agents.length>0){
-          localStorage.setItem("rpv_data",JSON.stringify(data));
-        }
-      }catch(e){}
-      const s=document.getElementById('jsonp_s');if(s)s.remove();
-      delete window[id];resolve();
-    };
-    const s=document.createElement('script');
-    s.id='jsonp_s';
-    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
-    s.onerror=function(){
-      const se=document.getElementById('jsonp_s');if(se)se.remove();
-      delete window[id];resolve();
-    };
-    document.head.appendChild(s);
-  });
-}
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
-function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));if(SHEETS_CONFIG.enabled&&SHEETS_CONFIG.scriptUrl)syncToSheets(d);}
+function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
 function getDefaultData(){return{agents:[
-  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[0,6]},
-  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[0,6]},
-  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[0,6]},
-  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[0,6]},
-  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[0,6]}
+  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[]},
+  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[]},
+  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[]},
+  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[]},
+  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[]}
 ],indisponibilidades:[],nextId:6};}
 
+function syncToSheets(data){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  const id='rpv_save_'+Date.now();
+  window[id]=function(r){delete window[id];const s=document.getElementById('jsonp_save');if(s)s.remove();};
+  const s=document.createElement('script');s.id='jsonp_save';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
+  s.onerror=function(){delete window[id];s.remove();};
+  document.head.appendChild(s);
+}
+function loadFromSheets(){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  const id='rpv_load_'+Date.now();
+  window[id]=function(data){
+    delete window[id];const s=document.getElementById('jsonp_load');if(s)s.remove();
+    if(data&&data.agents&&data.agents.length>0){
+      localStorage.setItem("rpv_data",JSON.stringify(data));
+      // refresh agent in session
+      if(currentAgent){
+        const d=getData();
+        currentAgent=d.agents.find(a=>a.id===currentAgent.id)||currentAgent;
+        sessionStorage.setItem("rpv_agent",JSON.stringify(currentAgent));
+      }
+      refreshSelectLogin();
+    }
+  };
+  const s=document.createElement('script');s.id='jsonp_load';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
+  s.onerror=function(){delete window[id];s.remove();};
+  document.head.appendChild(s);
+}
+
+function refreshSelectLogin(){
+  const d=getData();const sel=document.getElementById("login-name");
+  if(sel)sel.innerHTML="<option value=''>Selecciona tu nombre...</option>"+d.agents.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join("");
+}
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
 function fmtDate(d){return d.toISOString().slice(0,10);}
 function fmtDateES(s){if(!s)return"";const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
-
 function getAgentStatus(agent,date){
   const d=getData();const ds=fmtDate(date);const dow=date.getDay();
   if((agent.libresSemana||[]).includes(dow))return"libre";
@@ -352,33 +348,29 @@ function getAgentStatus(agent,date){
     if(i.tipo==="rango"&&ds>=i.desde&&ds<=(i.hasta||i.desde))return"no-disp";
     if(i.tipo==="fija"&&(i.dias||[]).includes(dow))return"no-disp-fija";
   }
-  return"disponible";}
+  return"disponible";
+}
 
-async function initLoginScreen(){
-  // load from sheets in background, don't block UI
-  loadFromSheets().then(()=>{
-    // refresh select after sheets load
-    const d=getData();
-    const sel=document.getElementById("login-name");
-    if(sel) sel.innerHTML="<option value=''>Selecciona tu nombre...</option>"+d.agents.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join("");
-  });
-  const d=getData();
-  const sel=document.getElementById("login-name");
-  sel.innerHTML="<option value=''>Selecciona tu nombre...</option>"+d.agents.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join("");
+function initLoginScreen(){
+  if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
+  refreshSelectLogin();
+  loadFromSheets();
   const saved=sessionStorage.getItem("rpv_agent");
-  if(saved){currentAgent=JSON.parse(saved);showApp();}}
-
+  if(saved){currentAgent=JSON.parse(saved);showApp();}
+}
 function doLogin(){
-  const d=getData();
-  const id=parseInt(document.getElementById("login-name").value);
+  const d=getData();const id=parseInt(document.getElementById("login-name").value);
   const pass=document.getElementById("login-pass").value;
   const agent=d.agents.find(a=>a.id===id);
   if(!agent||agent.pass!==pass){document.getElementById("login-err").style.display="block";return;}
   document.getElementById("login-err").style.display="none";
-  currentAgent=agent;sessionStorage.setItem("rpv_agent",JSON.stringify(agent));showApp();}
-
-function doLogout(){sessionStorage.removeItem("rpv_agent");currentAgent=null;document.getElementById("login-screen").style.display="flex";document.getElementById("app-screen").style.display="none";}
-
+  currentAgent=agent;sessionStorage.setItem("rpv_agent",JSON.stringify(agent));showApp();
+}
+function doLogout(){
+  sessionStorage.removeItem("rpv_agent");currentAgent=null;
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("app-screen").style.display="none";
+}
 function showApp(){
   document.getElementById("login-screen").style.display="none";
   document.getElementById("app-screen").style.display="flex";
@@ -388,8 +380,8 @@ function showApp(){
   av.textContent=getInitials(currentAgent.nombre);
   document.getElementById("hdr-name").textContent=currentAgent.nombre.split(" ")[0];
   document.getElementById("hdr-airport").textContent=currentAgent.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
-  renderHome();}
-
+  renderHome();
+}
 function showTab(name,idx){
   document.querySelectorAll(".tab-page").forEach(el=>el.classList.remove("active"));
   document.querySelectorAll(".bottom-nav-btn").forEach(el=>el.classList.remove("active"));
@@ -397,26 +389,26 @@ function showTab(name,idx){
   document.querySelectorAll(".bottom-nav-btn")[idx].classList.add("active");
   if(name==="home")renderHome();
   if(name==="indisponibilidades")renderMyIndisp();
-  if(name==="libres")renderTeamLibres();
-  if(name==="equipo")renderTeam();}
+  if(name==="libres-propios")renderMisDiasLibres();
+  if(name==="equipo")renderEquipo();
+}
 
 function miniCalPrev(){miniCalMonth--;if(miniCalMonth<0){miniCalMonth=11;miniCalYear--;}renderMiniCal();}
 function miniCalNext(){miniCalMonth++;if(miniCalMonth>11){miniCalMonth=0;miniCalYear++;}renderMiniCal();}
-
 function renderHome(){
   if(!currentAgent)return;
   const d=getData();const today=new Date();
   const a=d.agents.find(x=>x.id===currentAgent.id)||currentAgent;
   const s=getAgentStatus(a,today);
   const bd={
-    disponible:{cls:"disponible",icon:"ti-circle-check",title:"Estás disponible hoy",sub:"Listo para trabajar en el aeropuerto"},
-    libre:{cls:"libre",icon:"ti-sun",title:"Hoy es tu día libre",sub:"Día libre acordado con el equipo"},
-    "no-disp":{cls:"no-disponible",icon:"ti-calendar-x",title:"No disponible hoy",sub:"Tienes una indisponibilidad registrada"},
+    disponible:{cls:"disponible",icon:"ti-circle-check",title:"Estás disponible hoy",sub:"Listo para trabajar"},
+    libre:{cls:"libre",icon:"ti-sun",title:"Hoy es tu día libre",sub:"Día libre fijo acordado"},
+    "no-disp":{cls:"no-disponible",icon:"ti-calendar-x",title:"No disponible hoy",sub:"Tienes una indisponibilidad"},
     "no-disp-fija":{cls:"no-disponible",icon:"ti-calendar-x",title:"No disponible hoy",sub:"Indisponibilidad fija semanal"}
   }[s]||{cls:"disponible",icon:"ti-circle-check",title:"Disponible",sub:""};
   document.getElementById("home-status-banner").innerHTML=`<div class="status-banner ${bd.cls}"><i class="ti ${bd.icon}" style="font-size:28px"></i><div><div class="banner-title">${bd.title}</div><div class="banner-sub">${bd.sub}</div></div></div>`;
-  renderMiniCal();}
-
+  renderMiniCal();
+}
 function renderMiniCal(){
   if(!currentAgent)return;
   const d=getData();const a=d.agents.find(x=>x.id===currentAgent.id)||currentAgent;
@@ -425,18 +417,15 @@ function renderMiniCal(){
   const daysInMonth=new Date(miniCalYear,miniCalMonth+1,0).getDate();
   const todayStr=fmtDate(new Date());
   let html="<div class='mini-cal-grid'>";
-  ["D","L","M","X","J","V","S"].forEach((dn,i)=>{html+=`<div class="mini-cal-dow${i===0||i===6?" wk":""}">${dn}</div>`;
-  });
+  ["D","L","M","X","J","V","S"].forEach((dn,i)=>{html+=`<div class="mini-cal-dow${i===0||i===6?" wk":""}">${dn}</div>`;});
   for(let i=0;i<firstDay;i++)html+="<div class='mini-cal-cell other-month'></div>";
   for(let day=1;day<=daysInMonth;day++){
     const dt=new Date(miniCalYear,miniCalMonth,day);const ds=fmtDate(dt);
     const s=getAgentStatus(a,dt);const isPast=ds<todayStr;const isToday=ds===todayStr;
-    let cls="mini-cal-cell";
-    if(isPast)cls+=" past";if(isToday)cls+=" today";
+    let cls="mini-cal-cell";if(isPast)cls+=" past";if(isToday)cls+=" today";
     if(s==="libre")cls+=" libre";
     else if(s==="no-disp")cls+=" no-disp";
     else if(s==="no-disp-fija")cls+=" no-disp-fija";
-    // find description tooltip
     const indisp=d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
       if(i.tipo==="puntual")return ds===i.desde;
       if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
@@ -444,21 +433,53 @@ function renderMiniCal(){
     const tip=indisp&&(indisp.descripcion||indisp.motivo)?` title="${(indisp.descripcion||indisp.motivo).replace(/"/g,"&quot;")}"` :"";
     html+=`<div class="${cls}"${tip}>${day}</div>`;
   }
-  html+="</div>";
-  document.getElementById("mini-cal").innerHTML=html;}
+  html+="</div>";document.getElementById("mini-cal").innerHTML=html;
+}
 
+// ── DÍAS LIBRES PROPIOS ──────────────────────────────────────────────────────
+function renderMisDiasLibres(){
+  if(!currentAgent)return;
+  const d=getData();const a=d.agents.find(x=>x.id===currentAgent.id)||currentAgent;
+  const libres=a.libresSemana||[];
+  const grid=document.getElementById("mis-dias-libres-grid");
+  grid.innerHTML=DIAS_ES.map((nombre,i)=>{
+    const activo=libres.includes(i);
+    return`<button class="dia-libre-btn${activo?" activo":""}" data-d="${i}" onclick="toggleDiaLibre(${i})">
+      ${DIAS_SEMANA[i]}<span>${nombre.slice(0,3)}</span>
+    </button>`;
+  }).join("");
+  document.getElementById("save-libres-msg").style.display="none";
+}
+function toggleDiaLibre(dow){
+  const d=getData();const a=d.agents.find(x=>x.id===currentAgent.id);if(!a)return;
+  if(!a.libresSemana)a.libresSemana=[];
+  if(a.libresSemana.includes(dow))a.libresSemana=a.libresSemana.filter(x=>x!==dow);
+  else a.libresSemana.push(dow);
+  localStorage.setItem("rpv_data",JSON.stringify(d)); // save locally without full sync yet
+  renderMisDiasLibres();
+}
+function guardarDiasLibres(){
+  const d=getData();saveData(d); // full sync to Sheets
+  currentAgent=d.agents.find(a=>a.id===currentAgent.id)||currentAgent;
+  sessionStorage.setItem("rpv_agent",JSON.stringify(currentAgent));
+  const msg=document.getElementById("save-libres-msg");
+  msg.style.display="block";setTimeout(()=>msg.style.display="none",3000);
+  renderMiniCal();
+}
+
+// ── INDISPONIBILIDADES ───────────────────────────────────────────────────────
 function renderMyIndisp(){
   const d=getData();const indisps=d.indisponibilidades.filter(i=>i.agentId===currentAgent.id);
   if(!indisps.length){document.getElementById("my-indisp-list").innerHTML="<div class='empty-state'><i class='ti ti-calendar-check'></i>Sin indisponibilidades.<br>Añade una cuando no puedas trabajar.</div>";return;}
   document.getElementById("my-indisp-list").innerHTML=indisps.map(i=>{
-    let dates="",icon="ti-calendar-event";
-    if(i.tipo==="puntual")dates=fmtDateES(i.desde);
+    let dates="",icon="ti-calendar-event",wrapCls="";
+    if(i.tipo==="puntual"){dates=fmtDateES(i.desde);}
     else if(i.tipo==="rango"){dates=fmtDateES(i.desde)+" → "+fmtDateES(i.hasta);icon="ti-calendar-stats";}
-    else if(i.tipo==="fija"){dates=(i.dias||[]).map(x=>DIAS_SEMANA[x]).join(" · ");icon="ti-repeat";}
+    else if(i.tipo==="fija"){dates=(i.dias||[]).map(x=>DIAS_SEMANA[x]).join(" · ");icon="ti-repeat";wrapCls="fija";}
     const tramo=i.tramo?" · "+i.tramo:"";
     const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-card">
-      <div class="indisp-icon-wrap ${i.tipo==="fija"?"fija":""}"><i class="ti ${icon}" style="font-size:18px"></i></div>
+      <div class="indisp-icon-wrap ${wrapCls}"><i class="ti ${icon}" style="font-size:18px"></i></div>
       <div class="indisp-body">
         <div class="indisp-name">${i.motivo||"Sin descripción"}</div>
         <div class="indisp-meta">${dates}${tramo}</div>
@@ -467,10 +488,13 @@ function renderMyIndisp(){
       </div>
       <button class="indisp-del" onclick="deleteIndisp(${i.id})"><i class="ti ti-trash"></i></button>
     </div>`;
-  }).join("");}
-
-function deleteIndisp(id){if(!confirm("¿Eliminar esta indisponibilidad?"))return;const d=getData();d.indisponibilidades=d.indisponibilidades.filter(i=>i.id!==id);saveData(d);renderMyIndisp();renderMiniCal();}
-
+  }).join("");
+}
+function deleteIndisp(id){
+  if(!confirm("¿Eliminar esta indisponibilidad?"))return;
+  const d=getData();d.indisponibilidades=d.indisponibilidades.filter(i=>i.id!==id);
+  saveData(d);renderMyIndisp();renderMiniCal();
+}
 function openAddIndisp(){
   setTipo("puntual");fijaDays=[];
   document.getElementById("f-fecha-desde").value=fmtDate(new Date());
@@ -479,22 +503,23 @@ function openAddIndisp(){
   document.getElementById("f-tramo").value="";
   document.getElementById("f-motivo").value="";
   document.getElementById("f-descripcion").value="";
-  document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
-  openModal("modal-indisp");}
-
-function setTipo(t){indispTipo=t;
-  document.querySelectorAll(".tipo-btn").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
-  document.getElementById("indisp-puntual-fields").style.display=t==="puntual"?"block":"none";
-  document.getElementById("indisp-rango-fields").style.display=t==="rango"?"block":"none";
-  document.getElementById("indisp-fija-fields").style.display=t==="fija"?"block":"none";}
-
+  document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel-red"));
+  openModal("modal-indisp");
+}
+function setTipo(t){
+  indispTipo=t;
+  document.querySelectorAll(".tipo-btn").forEach(b=>b.classList.remove("sel-red","sel-amber"));
+  document.querySelector(`.tipo-btn[data-tipo="${t}"]`).classList.add("sel-red");
+  document.getElementById("f-puntual").style.display=t==="puntual"?"block":"none";
+  document.getElementById("f-rango").style.display=t==="rango"?"block":"none";
+  document.getElementById("f-fija").style.display=t==="fija"?"block":"none";
+}
 document.getElementById("fija-days-row").addEventListener("click",e=>{
   const chip=e.target.closest(".week-day-chip");if(!chip)return;
   const dv=parseInt(chip.dataset.d);
   if(fijaDays.includes(dv))fijaDays=fijaDays.filter(x=>x!==dv);else fijaDays.push(dv);
-  document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.toggle("sel",fijaDays.includes(parseInt(c.dataset.d))));
+  document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.toggle("sel-red",fijaDays.includes(parseInt(c.dataset.d))));
 });
-
 function saveIndisp(){
   const d=getData();
   const obj={id:d.nextId++,agentId:currentAgent.id,tipo:indispTipo,
@@ -505,46 +530,48 @@ function saveIndisp(){
   else if(indispTipo==="rango"){obj.desde=document.getElementById("f-rango-desde").value;obj.hasta=document.getElementById("f-rango-hasta").value;if(!obj.desde||!obj.hasta){alert("Selecciona las fechas");return;}if(obj.desde>obj.hasta){alert("La fecha inicio debe ser anterior al fin");return;}}
   else if(indispTipo==="fija"){if(!fijaDays.length){alert("Selecciona al menos un día");return;}obj.dias=[...fijaDays];}
   d.indisponibilidades.push(obj);d.nextId++;
-  saveData(d);closeModal("modal-indisp");renderMyIndisp();renderMiniCal();}
+  saveData(d);closeModal("modal-indisp");renderMyIndisp();renderMiniCal();
+}
 
-function renderTeamLibres(){
-  const d=getData();
-  const mad=d.agents.filter(a=>a.aeropuerto==="MAD");const bcn=d.agents.filter(a=>a.aeropuerto==="BCN");
-  function agentRow(a){
-    const libres=(a.libresSemana||[]).sort();
-    const days=libres.map(i=>`<span class="team-day-libre">${DIAS_ES[i]}</span>`).join("");
-    const isMe=a.id===currentAgent.id;
-    return`<div class="team-agent-row" style="${isMe?"border-left:3px solid var(--brand)":""}">
-      <div class="team-avatar" style="background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]}">${getInitials(a.nombre)}</div>
-      <div class="team-agent-name">${a.nombre}${isMe?' <span style="font-size:10px;background:var(--brand-bg);color:var(--brand-light);padding:1px 6px;border-radius:20px">Tú</span>':""}</div>
-      <div class="team-days">${days||"<span style='color:var(--text3);font-size:12px'>Sin libres</span>"}</div>
-    </div>`;}
-  let html="";
-  if(mad.length)html+=`<div class="team-section"><div class="team-header"><span class="team-badge mad">MAD</span><span style="font-size:13px;font-weight:600">Madrid Barajas</span></div><div class="team-body">${mad.map(agentRow).join("")}</div></div>`;
-  if(bcn.length)html+=`<div class="team-section"><div class="team-header"><span class="team-badge bcn">BCN</span><span style="font-size:13px;font-weight:600">Barcelona El Prat</span></div><div class="team-body">${bcn.map(agentRow).join("")}</div></div>`;
-  document.getElementById("team-libres-content").innerHTML=html;}
-
-function renderTeam(){
+// ── EQUIPO ───────────────────────────────────────────────────────────────────
+function renderEquipo(){
   const d=getData();const today=new Date();
   const statusMap={disponible:"Disponible",libre:"Día libre","no-disp":"No disponible","no-disp-fija":"No disp. fija"};
   const sorted=[...d.agents].sort((a,b)=>{const o={disponible:0,libre:1,"no-disp":2,"no-disp-fija":2};return(o[getAgentStatus(a,today)]||0)-(o[getAgentStatus(b,today)]||0);});
   document.getElementById("team-today-content").innerHTML=sorted.map(a=>{
     const s=getAgentStatus(a,today);const isMe=a.id===currentAgent.id;
     const sl=statusMap[s]||"—";
-    const sc=s==="disponible"?"disponible":s==="libre"?"libre":"no-disponible";
     const dotColor=s.includes("no")?"var(--red)":s==="libre"?"var(--amber)":"var(--green)";
+    const sc=s==="disponible"?"disponible":s==="libre"?"libre":"no-disponible";
     return`<div style="background:var(--bg2);border:1px solid ${isMe?"var(--brand)":"var(--border)"};border-radius:var(--radius);padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
         <div class="team-avatar" style="width:38px;height:38px;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};font-size:13px">${getInitials(a.nombre)}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:600">${a.nombre}${isMe?" <span style='font-size:10px;background:var(--brand-bg);color:var(--brand-light);padding:1px 6px;border-radius:20px'>Tú</span>":" "}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${a.aeropuerto==="MAD"?"Madrid":"Barcelona"} · ${a.tel||"—"}</div>
-        </div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${a.nombre}${isMe?' <span style="font-size:10px;background:var(--brand-bg);color:var(--brand-light);padding:1px 6px;border-radius:20px">Tú</span>':""}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${a.aeropuerto==="MAD"?"Madrid":"Barcelona"}</div></div>
         <span class="pill pill-${sc}"><span class="status-dot" style="background:${dotColor};box-shadow:0 0 5px ${dotColor}"></span>${sl}</span>
       </div>
-      <div style="font-size:11px;color:var(--text3)">Libres fijos: <span style="color:var(--amber)">${(a.libresSemana||[]).map(i=>DIAS_SEMANA[i]).join(", ")||"—"}</span></div>
+      <div style="font-size:11px;color:var(--text3)">Libres fijos: <span style="color:var(--amber)">${(a.libresSemana||[]).length?(a.libresSemana||[]).map(i=>DIAS_SEMANA[i]).join(", "):"Sin definir"}</span></div>
     </div>`;
-  }).join("");}
+  }).join("");
+
+  // Team libres grouped by airport
+  const mad=d.agents.filter(a=>a.aeropuerto==="MAD");
+  const bcn=d.agents.filter(a=>a.aeropuerto==="BCN");
+  function agentLibreRow(a){
+    const isMe=a.id===currentAgent.id;
+    const libres=(a.libresSemana||[]).sort();
+    const days=libres.length?libres.map(i=>`<span class="day-pill-libre">${DIAS_ES[i]}</span>`).join(""):"<span style='color:var(--text3);font-size:12px'>Sin definir</span>";
+    return`<div class="team-agent-row" style="${isMe?"border-left:3px solid var(--brand)":""}">
+      <div class="team-avatar" style="background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]}">${getInitials(a.nombre)}</div>
+      <div class="team-agent-name">${a.nombre}${isMe?' <span style="font-size:10px;background:var(--brand-bg);color:var(--brand-light);padding:1px 5px;border-radius:20px">Tú</span>':""}</div>
+      <div class="team-days">${days}</div>
+    </div>`;
+  }
+  let html="";
+  if(mad.length)html+=`<div class="team-section"><div class="team-header"><span class="team-badge mad">MAD</span><span style="font-size:13px;font-weight:600">Madrid Barajas</span></div><div class="team-body">${mad.map(agentLibreRow).join("")}</div></div>`;
+  if(bcn.length)html+=`<div class="team-section"><div class="team-header"><span class="team-badge bcn">BCN</span><span style="font-size:13px;font-weight:600">Barcelona El Prat</span></div><div class="team-body">${bcn.map(agentLibreRow).join("")}</div></div>`;
+  document.getElementById("team-libres-content").innerHTML=html;
+}
 
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
