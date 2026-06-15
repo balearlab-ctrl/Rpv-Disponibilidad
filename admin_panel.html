@@ -283,7 +283,7 @@ let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[
 const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
 
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
-function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
+function saveData(d){d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
 function getDefaultData(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
   {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
@@ -306,17 +306,48 @@ function syncToSheets(data){
 function loadFromSheets(){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
   const id='rpv_load_'+Date.now();
-  window[id]=function(data){
+  window[id]=function(remote){
     delete window[id];const s=document.getElementById('jsonp_load');if(s)s.remove();
-    if(data&&data.agents&&data.agents.length>0){
-      data.agents.forEach(a=>{if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];if(!a.libresTimestamps)a.libresTimestamps={};if(!a.libresComentarios)a.libresComentarios={};});
-      localStorage.setItem("rpv_data",JSON.stringify(data));
-      try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}
-      renderDashboard();}};
+    try{
+      if(!remote||!remote.agents){return;}
+      // Ensure new fields exist
+      remote.agents.forEach(a=>{
+        if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];
+        if(!a.libresTimestamps)a.libresTimestamps={};
+        if(!a.libresComentarios)a.libresComentarios={};
+      });
+      const local=getData();
+      // Use whichever has more agents, or if same count use newer timestamp
+      const remoteScore=(remote.agents||[]).length*1000+(remote.indisponibilidades||[]).length;
+      const localScore=(local.agents||[]).length*1000+(local.indisponibilidades||[]).length;
+      if(remoteScore>=localScore){
+        // Remote has more or equal data — use it but keep any local agents not in remote
+        const remoteIds=new Set(remote.agents.map(a=>a.id));
+        const localOnly=local.agents.filter(a=>!remoteIds.has(a.id));
+        if(localOnly.length>0){
+          // Merge: local has agents not in remote — push merged data back
+          remote.agents=[...remote.agents,...localOnly];
+          remote.nextId=Math.max(remote.nextId||6,...remote.agents.map(a=>a.id+1));
+        }
+        localStorage.setItem("rpv_data",JSON.stringify(remote));
+        document.getElementById("sync-dot").className="sync-dot";
+        document.getElementById("sync-text").textContent="Sincronizado";
+        renderDashboard();
+        // If we merged local agents, push back to sheets
+        if(localOnly.length>0){syncToSheets(remote);}
+      } else {
+        // Local has more data — push local to sheets
+        document.getElementById("sync-dot").className="sync-dot";
+        document.getElementById("sync-text").textContent="Subiendo...";
+        syncToSheets(local);
+      }
+    }catch(e){console.error('Sheets sync error:',e);}
+  };
   const s=document.createElement('script');s.id='jsonp_load';
   s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
   s.onerror=function(){delete window[id];s.remove();
-    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Sin conexión";}catch(e){}};
+    document.getElementById("sync-dot").className="sync-dot offline";
+    document.getElementById("sync-text").textContent="Sin conexión";};
   document.head.appendChild(s);}
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}

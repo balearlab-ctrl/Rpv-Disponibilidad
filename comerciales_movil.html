@@ -350,7 +350,7 @@ const N=new Date();mcY=N.getFullYear();mcM=N.getMonth();
 const SEMANAS_MOSTRAR = 8; // cuántas semanas mostrar (editable)
 
 function gD(){return JSON.parse(localStorage.getItem("rpv")||"null")||defD();}
-function sD(d){localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
+function sD(d){d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
 function defD(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[]},
   {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",pass:"1234",colorIdx:1,libresSemana:[],diasLibresPuntuales:[]},
@@ -366,19 +366,37 @@ function sync(data){
   s.onerror=function(){delete window[id];s.remove();};document.head.appendChild(s);
 }
 function load(){
-  const id='ld'+Date.now();window[id]=function(data){
+  const id='ld'+Date.now();
+  window[id]=function(remote){
     delete window[id];const s=document.getElementById('js_ld');if(s)s.remove();
-    if(data&&data.agents&&data.agents.length>0){
-      // merge diasLibresPuntuales if missing
-      data.agents.forEach(a=>{if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];});
-      localStorage.setItem("rpv",JSON.stringify(data));
-      if(CA){CA=data.agents.find(a=>a.id===CA.id)||CA;sessionStorage.setItem("rca",JSON.stringify(CA));}
+    try{
+      if(!remote||!remote.agents){return;}
+      remote.agents.forEach(a=>{if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];});
+      const local=gD();
+      const remoteScore=(remote.agents||[]).length*1000+(remote.indisponibilidades||[]).length;
+      const localScore=(local.agents||[]).length*1000+(local.indisponibilidades||[]).length;
+      if(remoteScore>=localScore){
+        // Remote wins — but keep local-only agents
+        const remoteIds=new Set(remote.agents.map(a=>a.id));
+        const localOnly=local.agents.filter(a=>!remoteIds.has(a.id));
+        if(localOnly.length>0){
+          remote.agents=[...remote.agents,...localOnly];
+          remote.nextId=Math.max(remote.nextId||6,...remote.agents.map(a=>a.id+1));
+          sync(remote); // push merged back
+        }
+        localStorage.setItem("rpv",JSON.stringify(remote));
+        if(CA){CA=remote.agents.find(a=>a.id===CA.id)||CA;sessionStorage.setItem("rca",JSON.stringify(CA));}
+      } else {
+        // Local wins — push to sheets
+        sync(local);
+      }
       refreshSel();
-    }
+    }catch(e){}
   };
   const s=document.createElement('script');s.id='js_ld';
   s.src=SU+'?action=getAll&callback='+id;
-  s.onerror=function(){delete window[id];s.remove();};document.head.appendChild(s);
+  s.onerror=function(){delete window[id];s.remove();};
+  document.head.appendChild(s);
 }
 
 function ini(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
