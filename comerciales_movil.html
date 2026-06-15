@@ -639,45 +639,45 @@ function showDayPopup(ds){
 // ── TOUR GUIADO ───────────────────────────────────────────────────────────────
 const TOUR_STEPS = [
   {
-    target: "#tab-home .status-banner, #home-status-banner",
+    target: "#home-status-banner",
     title: "Tu estado hoy",
-    text: "Aquí ves de un vistazo si estás disponible, libre o con alguna incidencia hoy.",
+    text: "De un vistazo sabes si estás disponible, libre o con horario parcial hoy.",
     arrow: "bottom"
   },
   {
     target: "#home-cal-content",
     title: "Calendario del equipo",
-    text: "Muestra la disponibilidad de todos tus compañeros del aeropuerto. Toca cualquier día para ver el detalle de cada persona.",
+    text: "Aquí ves la disponibilidad de todos tus compañeros del aeropuerto este mes. Toca cualquier día para ver el detalle de cada persona.",
     arrow: "top"
   },
   {
     target: "#home-initials-legend",
     title: "Quién es quién",
-    text: "Aquí ves a qué persona corresponde cada inicial del calendario. El punto de color indica su estado hoy.",
+    text: "Cada inicial del calendario corresponde a un compañero. El punto de color muestra su estado: verde disponible, amarillo libre, rojo no disponible.",
     arrow: "top"
   },
   {
     target: ".bottom-nav-btn:nth-child(2)",
-    title: "No disponible",
-    text: "Registra aquí cuando estés disponible solo parte del día: tienes una cena a las 20h, una cita, un tramo que no puedes. Lo verán tus compañeros y el coordinador.",
+    title: "Horario parcial",
+    text: "¿Tienes una cena a las 20h? ¿Una cita por la mañana? Registra aquí los días en los que estás disponible solo hasta cierta hora o a partir de cierta hora.",
     arrow: "bottom"
   },
   {
     target: ".bottom-nav-btn:nth-child(3)",
     title: "Mis libres",
-    text: "Marca tus días libres fijos (los que se repiten siempre) y los días libres acordados semana a semana con el equipo.",
+    text: "Aquí marcas los días que no trabajas. Los fijos se repiten cada semana. Los puntuales los acuerdas semana a semana con el equipo.",
     arrow: "bottom"
   },
   {
     target: ".bottom-nav-btn:nth-child(4)",
     title: "Equipo",
-    text: "Ve el estado de todos los compañeros hoy y sus días libres fijos acordados.",
+    text: "Ve quién está disponible hoy y los días libres fijos de cada compañero.",
     arrow: "bottom"
   },
   {
     target: ".logout-btn:first-of-type",
-    title: "¡Listo!",
-    text: "Ya conoces la app. Puedes volver a ver este tour tocando el botón ❓ en la cabecera cuando quieras.",
+    title: "¡Ya está todo!",
+    text: "Ya conoces la app. Si quieres volver a ver este tour, toca el botón ❓ en la cabecera.",
     arrow: "top",
     last: true
   }
@@ -764,12 +764,9 @@ function showTourStep(){
 function tourNext(){
   tourStep++;
   if(tourStep >= TOUR_STEPS.length){ endTour(); return; }
-  // If navigating to a tab step, switch tab
   const step = TOUR_STEPS[tourStep];
-  if(step.target.includes("bottom-nav-btn:nth-child(2)")) showTab("indisp",1);
-  else if(step.target.includes("bottom-nav-btn:nth-child(3)")) showTab("libres",2);
-  else if(step.target.includes("bottom-nav-btn:nth-child(4)")) showTab("equipo",3);
-  else if(tourStep <= 3) showTab("home",0);
+  // Switch to home for first 3 steps, navigate tabs for later steps to show content
+  if(tourStep <= 2) showTab("home",0);
   setTimeout(showTourStep, 50);
 }
 
@@ -849,8 +846,9 @@ function renderHome(){
 }
 function renderMiniCal(){
   if(!CA)return;
+  if(!document.getElementById("mini-cal"))return; // element removed
   const d=gD();const a=d.agents.find(x=>x.id===CA.id)||CA;
-  document.getElementById("mini-cal-label").textContent=MESES[mcM]+" "+mcY;
+  const lbl=document.getElementById("mini-cal-label");if(lbl)lbl.textContent=MESES[mcM]+" "+mcY;
   const firstDay=new Date(mcY,mcM,1).getDay();
   const dim=new Date(mcY,mcM+1,0).getDate();
   const todayStr=fd(new Date());
