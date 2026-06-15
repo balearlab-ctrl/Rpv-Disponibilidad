@@ -465,7 +465,26 @@ function gD(){
   const d=localStorage.getItem("rpv")||localStorage.getItem("rpv_data");
   return JSON.parse(d||"null")||defD();
 }
-function sD(d){d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
+
+function cleanOldLibresPuntuales(data){
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear() - 2);
+  const cutoffStr = fd ? fd(cutoff) : (()=>{const y=cutoff.getFullYear();const m=String(cutoff.getMonth()+1).padStart(2,"0");const d=String(cutoff.getDate()).padStart(2,"0");return y+"-"+m+"-"+d;})();
+  (data.agents||[]).forEach(a=>{
+    if(a.diasLibresPuntuales){
+      a.diasLibresPuntuales=a.diasLibresPuntuales.filter(ds=>ds>=cutoffStr);
+    }
+    if(a.libresTimestamps){
+      Object.keys(a.libresTimestamps).forEach(ds=>{if(ds<cutoffStr)delete a.libresTimestamps[ds];});
+    }
+    if(a.libresComentarios){
+      Object.keys(a.libresComentarios).forEach(ds=>{if(ds<cutoffStr)delete a.libresComentarios[ds];});
+    }
+  });
+  return data;
+}
+
+function sD(d){d=cleanOldLibresPuntuales(d);d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
 function defD(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[]},
   {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",pass:"1234",colorIdx:1,libresSemana:[],diasLibresPuntuales:[]},
