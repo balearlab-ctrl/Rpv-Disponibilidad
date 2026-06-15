@@ -1200,17 +1200,14 @@ function delIndisp(id){
   sD(d);renderIndisp();renderMiniCal();
 }
 function openAddIndisp(){
-  setTipo("puntual");fDays=[];
-  document.getElementById("f-fecha").value=fd(new Date());
-  document.getElementById("f-desde").value=fd(new Date());
-  document.getElementById("f-hasta").value=fd(new Date());
+  fDays=[];
   setTipo("parcial");
   setParcialTipo("hasta");
-  document.getElementById("f-parcial-fecha").value=fd(new Date());
+  const today=fd(new Date());
+  const pfecha=document.getElementById("f-parcial-fecha");if(pfecha)pfecha.value=today;
   document.getElementById("f-motivo").value="";
   document.getElementById("f-desc").value="";
   document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
-  document.getElementById("f-parcial-fecha").value=fd(new Date());
   const r=document.querySelector('input[name="parcial-tipo"][value="hasta"]');if(r){r.checked=true;setParcialTipo("hasta");}
   openModal("modal-indisp");
 }
