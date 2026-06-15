@@ -18,8 +18,9 @@
   --purple:#9b6dff;--purple-bg:rgba(155,109,255,0.12);
   --radius:12px;--radius-sm:8px}
 html,body{height:100%;overscroll-behavior:none}
-body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh}
-#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+body{background:#000;color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh;display:flex;justify-content:center}
+#login-screen,#app-screen{width:100%;max-width:430px}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
 .login-logo-img{height:80px;width:auto;margin-bottom:18px}
 .login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--text3);margin-bottom:28px;text-align:center}
@@ -36,14 +37,14 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .btn-primary:active{opacity:.88}
 .btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .login-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none}
-#app-screen{display:none;flex-direction:column;min-height:100vh}
+#app-screen{display:none;flex-direction:column;min-height:100vh;position:relative}
 .app-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .app-header-logo{height:32px;width:auto}
 .app-header-right{display:flex;align-items:center;gap:10px}
 .app-header-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
 .app-header-name{font-size:13px;font-weight:600;color:var(--text)}
 .logout-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
-.bottom-nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;padding:6px 0 env(safe-area-inset-bottom,6px);position:sticky;bottom:0;z-index:50}
+.bottom-nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;padding:6px 0 env(safe-area-inset-bottom,6px);position:sticky;bottom:0;z-index:50;width:100%}
 .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;border:none;background:none;transition:color .15s}
 .bottom-nav-btn i{font-size:22px}
 .bottom-nav-btn.active{color:var(--brand)}
