@@ -300,6 +300,7 @@ textarea{resize:vertical;min-height:70px}
           </div>
         </div>
         <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3)"></div> · Disponible</div>
           <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.5)"></div> <b>L</b> Libre fijo</div>
           <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.12);border:1px dashed rgba(245,166,35,0.5)"></div> <b>L</b> Libre puntual</div>
           <div class="legend-item"><div style="display:flex;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);margin-top:2px"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--red);margin-top:2px"></span></div> Parcial</div>
@@ -921,7 +922,7 @@ function renderCalendar(){
         const conflict=(s==="libre"||s==="libre-puntual")&&otrosLibres.length>0;
 
         // Colors per status
-        let bg="transparent",color="var(--text3)",txt="·",border="none",dot="";
+        let bg="rgba(62,207,142,0.1)",color="var(--green)",txt="·",border="1px solid rgba(62,207,142,0.2)",dot="";
         if(s==="libre"){
           bg="rgba(245,166,35,0.22)";color="var(--amber)";txt="L";
           border="1px solid rgba(245,166,35,0.6)";
@@ -951,7 +952,7 @@ function renderCalendar(){
           libTs:(a.libresTimestamps||{})[ds]||""
         };
 
-        const opacity=isPast?"opacity:.35;":"";
+        const opacity=isPast?"opacity:.25;":"";
         const outline=isToday?"outline:2px solid var(--brand);outline-offset:-2px;":"";
         const cursor=s==="disponible"?"":"cursor:pointer;";
 
