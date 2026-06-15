@@ -762,6 +762,14 @@ const TOUR_STEPS = [
     text: "Estado actual de cada compañero: disponible, libre, parcial o no disponible.",
     arrow: "top"
   },
+  // ── MI CUENTA ───────────────────────────────────────────────────────────────
+  {
+    target: "#tab-equipo > div:first-child",
+    tab: "equipo", tabIdx: 3,
+    title: "Cambiar contraseña",
+    text: "En la pestaña Equipo, arriba del todo, puedes cambiar tu contraseña cuando quieras. Necesitarás introducir la contraseña actual para confirmar el cambio.",
+    arrow: "top"
+  },
   // ── FIN ─────────────────────────────────────────────────────────────────────
   {
     target: ".logout-btn:first-of-type",
@@ -881,7 +889,7 @@ function endTour(){
   document.getElementById("tour-backdrop").style.display = "none";
   document.getElementById("tour-highlight").style.display = "none";
   document.getElementById("tour-bubble").style.display = "none";
-  if(calTipEl) calTipEl.style.display = "none";
+  try{if(typeof calTipEl!=="undefined"&&calTipEl)calTipEl.style.display="none";}catch(e){}
   showTab("home", 0);
   localStorage.setItem("rpv_tour_done","1");
 }
@@ -1038,7 +1046,6 @@ function renderLibres(){
   document.getElementById("dias-fijos-grid").innerHTML=DS.map((dn,i)=>
     `<button class="dia-fijo-btn${libres.includes(i)?" activo":""}" onclick="toggleFijo(${i})">
       ${dn}<span>${DSE[i].slice(0,3)}</span></button>`).join("");
-  document.getElementById("save-fijos-msg").style.display="none";
 
   // PUNTUALES POR SEMANAS
   renderSemanas(a);
@@ -1093,7 +1100,6 @@ function renderSemanas(a){
     html+="</div></div>";
   }
   document.getElementById("semanas-libres-container").innerHTML=html;
-  document.getElementById("save-puntuales-msg").style.display="none";
 }
 
 function toggleLibrePuntual(ds,blocked){
