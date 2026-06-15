@@ -309,7 +309,7 @@ textarea{resize:vertical;min-height:70px}
             Libre fijo
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
-            <div style="width:37px;height:33px;background:rgba(34,211,238,0.15);border:1px dashed rgba(34,211,238,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--blue-light)">L</div>
+            <div style="width:37px;height:33px;background:rgba(34,211,238,0.15);border:1px dashed rgba(34,211,238,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--blue-light)">LP</div>
             Libre puntual
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
@@ -952,7 +952,7 @@ function renderCalendar(){
           bg="rgba(245,166,35,0.22)";color="var(--amber)";txt="L";
           border="1px solid rgba(245,166,35,0.6)";
         } else if(s==="libre-puntual"){
-          bg="rgba(34,211,238,0.15)";color="var(--blue-light)";txt="L";
+          bg="rgba(34,211,238,0.15)";color="var(--blue-light)";txt="LP";
           border="1px dashed rgba(34,211,238,0.5)";
         } else if(s==="parcial"){
           bg="transparent";color="var(--text)";txt="●";
@@ -988,7 +988,7 @@ function renderCalendar(){
                 <span style="width:7px;height:7px;border-radius:50%;background:var(--red)"></span>
               </div>
             </div>`
-          : txt+dot;
+          : (txt==="LP" ? `<span style="font-size:9px;font-weight:800">${txt}</span>` : txt)+dot;
         return`<div
           data-tip="${tipId}"
           onmouseenter="showCalTip(event,this.dataset.tip)"
