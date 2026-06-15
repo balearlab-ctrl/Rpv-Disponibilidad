@@ -209,19 +209,59 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
     <!-- INICIO -->
     <div id="tab-home" class="tab-page active">
+
+      <!-- Mi estado hoy -->
       <div id="home-status-banner"></div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot ld-libre"></div>Libre fijo</div>
-        <div class="legend-item"><div class="legend-dot ld-lp"></div>Libre puntual</div>
-        <div class="legend-item"><div class="legend-dot" style="background:rgba(74,127,255,0.15);border:1px solid var(--blue-light)"></div>Parcial</div>
-        <div class="legend-item"><div class="legend-dot ld-nodisp"></div>No disponible</div>
+
+      <!-- Calendario del equipo -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px">
+        <!-- Header -->
+        <div style="padding:12px 14px 10px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div style="font-size:14px;font-weight:700" id="home-cal-title">Equipo</div>
+              <div style="font-size:11px;color:var(--text3)" id="home-cal-airport"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="cal-nav-btn" onclick="homeCalPrev()"><i class="ti ti-chevron-left"></i></div>
+              <span id="home-cal-label" style="font-size:13px;font-weight:600;min-width:110px;text-align:center"></span>
+              <div class="cal-nav-btn" onclick="homeCalNext()"><i class="ti ti-chevron-right"></i></div>
+            </div>
+          </div>
+          <!-- Legend -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Disponible</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>Libre</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="display:flex;gap:2px"><span style="width:4px;height:4px;border-radius:50%;background:var(--green);display:inline-block;margin-top:2px"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--red);display:inline-block;margin-top:2px"></span></div>Parcial</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>No disponible</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--brand-light)"><i class="ti ti-hand-point-up" style="font-size:11px"></i>Toca un día</div>
+          </div>
+        </div>
+        <!-- Calendar grid -->
+        <div id="home-cal-content"></div>
       </div>
-      <div class="cal-nav">
-        <div class="cal-nav-btn" onclick="miniCalPrev()"><i class="ti ti-chevron-left"></i></div>
-        <h3 id="mini-cal-label"></h3>
-        <div class="cal-nav-btn" onclick="miniCalNext()"><i class="ti ti-chevron-right"></i></div>
+
+      <!-- Mi calendario personal (colapsable) -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleMyCal()">
+          <div style="font-size:13px;font-weight:600"><i class="ti ti-user" style="font-size:14px;color:var(--brand);margin-right:6px"></i>Mi calendario personal</div>
+          <i class="ti ti-chevron-down" id="my-cal-chevron" style="font-size:16px;color:var(--text3);transition:transform .2s"></i>
+        </div>
+        <div id="my-cal-wrap" style="display:none;border-top:1px solid var(--border);padding:12px">
+          <div class="cal-nav" style="margin-bottom:8px">
+            <div class="cal-nav-btn" onclick="miniCalPrev()"><i class="ti ti-chevron-left"></i></div>
+            <h3 id="mini-cal-label" style="font-size:13px"></h3>
+            <div class="cal-nav-btn" onclick="miniCalNext()"><i class="ti ti-chevron-right"></i></div>
+          </div>
+          <div class="legend" style="margin-bottom:10px">
+            <div class="legend-item"><div class="legend-dot ld-libre"></div>Libre fijo</div>
+            <div class="legend-item"><div class="legend-dot ld-lp"></div>Libre puntual</div>
+            <div class="legend-item"><div class="legend-dot ld-nodisp"></div>No disponible</div>
+          </div>
+          <div class="mini-cal" id="mini-cal"></div>
+        </div>
       </div>
-      <div class="mini-cal" id="mini-cal"></div>
+
     </div>
 
     <!-- NO DISPONIBLE -->
@@ -644,7 +684,7 @@ function renderHome(){
     "no-disp-fija":{cls:"no-disponible",icon:"ti-calendar-x",title:"No disponible hoy",sub:"Indisponibilidad fija semanal"}
   }[s]||{cls:"disponible",icon:"ti-circle-check",title:"Disponible",sub:""};
   document.getElementById("home-status-banner").innerHTML=`<div class="status-banner ${bd.cls}"><i class="ti ${bd.icon}" style="font-size:26px"></i><div><div class="banner-title">${bd.title}</div><div class="banner-sub">${bd.sub}</div></div></div>`;
-  renderMiniCal();
+  renderHomeCal();
 }
 function renderMiniCal(){
   if(!CA)return;
@@ -950,11 +990,91 @@ function calLabel(allAgents, agent) {
   return initial;
 }
 // ── CALENDARIO COMPARTIDO ────────────────────────────────────────────────────
-let teamCalYear, teamCalMonth;
-(function(){const n=new Date();teamCalYear=n.getFullYear();teamCalMonth=n.getMonth();})();
+let teamCalYear, teamCalMonth, homeCalYear, homeCalMonth;
+(function(){const n=new Date();
+  teamCalYear=n.getFullYear();teamCalMonth=n.getMonth();
+  homeCalYear=n.getFullYear();homeCalMonth=n.getMonth();
+})();
 
 function teamCalPrev(){teamCalMonth--;if(teamCalMonth<0){teamCalMonth=11;teamCalYear--;}renderTeamCal();}
 function teamCalNext(){teamCalMonth++;if(teamCalMonth>11){teamCalMonth=0;teamCalYear++;}renderTeamCal();}
+function homeCalPrev(){homeCalMonth--;if(homeCalMonth<0){homeCalMonth=11;homeCalYear--;}renderHomeCal();}
+function homeCalNext(){homeCalMonth++;if(homeCalMonth>11){homeCalMonth=0;homeCalYear++;}renderHomeCal();}
+function toggleMyCal(){
+  const wrap=document.getElementById("my-cal-wrap");
+  const chev=document.getElementById("my-cal-chevron");
+  const open=wrap.style.display==="none";
+  wrap.style.display=open?"block":"none";
+  chev.style.transform=open?"rotate(180deg)":"";
+  if(open)renderMiniCal();
+}
+
+function buildCalHTML(agents, year, month, d, targetDays){
+  const todayStr=fd(new Date());
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const firstDow=new Date(year,month,1).getDay();
+  const offset=(firstDow===0?6:firstDow-1);
+  const DAY_HDRS=["L","M","X","J","V","S","D"];
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">';
+  DAY_HDRS.forEach((h,i)=>{
+    const isWk=i>=5;
+    html+=`<div style="text-align:center;padding:7px 2px;font-size:10px;font-weight:700;color:${isWk?"var(--amber)":"var(--text3)"}">${h}</div>`;
+  });
+  html+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+  for(let i=0;i<offset;i++) html+='<div style="min-height:54px;border:0.5px solid rgba(255,255,255,0.05)"></div>';
+  for(let day=1;day<=daysInMonth;day++){
+    const dt=new Date(year,month,day);
+    const ds=fd(dt);
+    const isToday=ds===todayStr;const isPast=ds<todayStr;
+    const dow=dt.getDay();const isWk=dow===0||dow===6;
+    const agentStatuses=agents.map(a=>({a,s:status(a,dt)}));
+    window._teamCalDays=window._teamCalDays||{};
+    window._teamCalDays[ds]=agentStatuses.map(({a,s:s2})=>({
+      nombre:a.nombre,colorIdx:a.colorIdx,status:s2,label:calLabel(agents,a),
+      indisp:d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
+        if(i.tipo==="parcial"&&ds===i.desde)return true;
+        if(i.tipo==="puntual"&&ds===i.desde)return true;
+        if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
+        if(i.tipo==="fija")return(i.dias||[]).includes(dt.getDay());return false;
+      })||null,
+      libCom:(a.libresComentarios||{})[ds]||""
+    }));
+    let cellContent="";
+    agentStatuses.forEach(({a,s:s2})=>{
+      const lbl=calLabel(agents,a);
+      if(s2==="disponible"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0"></span><span style="font-size:9px;color:var(--text2);white-space:nowrap">${lbl}</span></div>`;
+      } else if(s2==="libre"||s2==="libre-puntual"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px"><span style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></span><span style="font-size:9px;color:var(--amber);white-space:nowrap;font-weight:600">${lbl}</span></div>`;
+      } else if(s2==="parcial"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px"><span style="width:4px;height:4px;border-radius:50%;background:var(--green);flex-shrink:0"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--red);flex-shrink:0"></span><span style="font-size:9px;color:var(--text2);white-space:nowrap">${lbl}</span></div>`;
+      } else {
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px"><span style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;opacity:.8"></span><span style="font-size:9px;color:var(--red);white-space:nowrap;opacity:.8">${lbl}</span></div>`;
+      }
+    });
+    html+=`<div onclick="showDayPopup('${ds}')" style="min-height:54px;border:0.5px solid rgba(255,255,255,0.06);padding:3px 4px;cursor:pointer;-webkit-tap-highlight-color:rgba(217,72,84,0.1);${isToday?"background:rgba(217,72,84,0.08);outline:1px solid rgba(217,72,84,0.3);outline-offset:-1px;":""}${isPast?"opacity:.4;":""}${isWk&&!isToday?"background:rgba(255,255,255,0.02);":""}">
+      <div style="font-size:11px;font-weight:700;color:${isToday?"var(--brand)":isWk?"var(--amber)":"var(--text3)"};margin-bottom:3px">${day}</div>
+      ${cellContent}
+    </div>`;
+  }
+  const totalCells=offset+daysInMonth;
+  const rem=(7-totalCells%7)%7;
+  for(let i=0;i<rem;i++) html+='<div style="min-height:54px;border:0.5px solid rgba(255,255,255,0.05)"></div>';
+  html+='</div>';
+  return html;
+}
+
+function renderHomeCal(){
+  if(!CA)return;
+  const d=gD();
+  const MESES_N=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  document.getElementById("home-cal-label").textContent=MESES_N[homeCalMonth]+" "+homeCalYear;
+  document.getElementById("home-cal-title").textContent="Equipo · "+MESES_N[homeCalMonth];
+  document.getElementById("home-cal-airport").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
+  const agents=d.agents.filter(a=>a.aeropuerto===CA.aeropuerto);
+  window._teamCalDays={};
+  document.getElementById("home-cal-content").innerHTML=buildCalHTML(agents,homeCalYear,homeCalMonth,d,window._teamCalDays);
+}
 
 function renderTeamCal(){
   if(!CA)return;
@@ -964,113 +1084,13 @@ function renderTeamCal(){
   const MESES_N=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   document.getElementById("team-cal-label").textContent=MESES_N[teamCalMonth]+" "+teamCalYear;
   document.getElementById("cal-airport-label").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
-
-  // Only show agents from same airport
   const agents=d.agents.filter(a=>a.aeropuerto===CA.aeropuerto);
-
-  // Build 7-column week view
-  // Find first day of month
-  const firstDow=new Date(teamCalYear,teamCalMonth,1).getDay();
-  // firstDow: 0=Sun,1=Mon... adjust to Mon-first
-  const offset=(firstDow===0?6:firstDow-1);
-
-  let html='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
-
-  // Day headers Mon-Sun
-  const DAY_HDRS=["L","M","X","J","V","S","D"];
-  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">';
-  DAY_HDRS.forEach((h,i)=>{
-    const isWk=i>=5;
-    html+=`<div style="text-align:center;padding:8px 2px;font-size:10px;font-weight:700;color:${isWk?"var(--amber)":"var(--text3)"}">${h}</div>`;
-  });
-  html+='</div>';
-
-  // Days grid
-  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr)">';
-
-  // Empty cells before first day
-  for(let i=0;i<offset;i++){
-    html+='<div style="min-height:52px;border:0.5px solid var(--border);opacity:.2"></div>';
-  }
-
-  for(let day=1;day<=daysInMonth;day++){
-    const dt=new Date(teamCalYear,teamCalMonth,day);
-    const ds=fd(dt);
-    const isToday=ds===todayStr;
-    const isPast=ds<todayStr;
-    const dow=dt.getDay(); // 0=Sun
-    const isWk=dow===0||dow===6;
-
-    // Get status for each agent this day
-    const agentStatuses=agents.map(a=>({a,s:status(a,dt)}));
-
-    // Build dots or names
-    let cellContent='';
-    agentStatuses.forEach(({a,s:s2})=>{
-      const ini=calLabel(agents,a);
-      if(s2==="disponible"){
-        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
-          <span style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden">${ini}</span>
-        </div>`;
-      } else if(s2==="libre"||s2==="libre-puntual"){
-        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
-          <span style="font-size:9px;color:var(--amber);white-space:nowrap;overflow:hidden;font-weight:600">${ini}</span>
-        </div>`;
-      } else if(s2==="parcial"){
-        // Two dots: green + red
-        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
-          <span style="width:4px;height:4px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
-          <span style="width:4px;height:4px;border-radius:50%;background:var(--red);flex-shrink:0"></span>
-          <span style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden">${ini}</span>
-        </div>`;
-      } else if(s2==="no-disp"||s2==="no-disponible"||s2==="no-disp-fija"){
-        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></span>
-          <span style="font-size:9px;color:var(--red);white-space:nowrap;overflow:hidden;opacity:.8">${ini}</span>
-        </div>`;
-      }
-    });
-
-    // Count available for today indicator
-    const availCount=agentStatuses.filter(({s:s2})=>s2==="disponible"||s2==="parcial").length;
-
-    // Store day data for tap popup
-    window._teamCalDays = {}; // reset on each render
-    const dayKey = ds;
-    window._teamCalDays[dayKey] = agentStatuses.map(({a,s:s2})=>({
-      nombre: a.nombre,
-      colorIdx: a.colorIdx,
-      status: s2,
-      label: calLabel(agents,a),
-      indisp: d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
-        if(i.tipo==="parcial"&&ds===i.desde)return true;
-        if(i.tipo==="puntual"&&ds===i.desde)return true;
-        if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
-        if(i.tipo==="fija")return(i.dias||[]).includes(dt.getDay());
-        return false;
-      })||null,
-      libCom:(a.libresComentarios||{})[ds]||""
-    }));
-    html+=`<div
-      onclick="showDayPopup('${ds}')"
-      style="min-height:52px;border:0.5px solid var(--border);padding:3px 4px;cursor:pointer;-webkit-tap-highlight-color:rgba(217,72,84,0.1);${isToday?"background:rgba(217,72,84,0.06);":""}${isPast?"opacity:.45;":""}${isWk?"background:rgba(245,166,35,0.04);":""}">
-      <div style="font-size:11px;font-weight:700;color:${isToday?"var(--brand)":isWk?"var(--amber)":"var(--text2)"};margin-bottom:3px">${day}</div>
-      ${cellContent}
-    </div>`;
-  }
-
-  // Fill remaining cells
-  const totalCells=offset+daysInMonth;
-  const remainder=(7-totalCells%7)%7;
-  for(let i=0;i<remainder;i++){
-    html+='<div style="min-height:52px;border:0.5px solid var(--border);opacity:.2"></div>';
-  }
-
-  html+='</div></div>';
-  document.getElementById("team-cal-content").innerHTML=html;
+  window._teamCalDays={};
+  document.getElementById("team-cal-content").innerHTML=
+    '<div style="border-top:1px solid var(--border)">'+buildCalHTML(agents,teamCalYear,teamCalMonth,d)+
+    '</div>';
 }
+
 
 // ── EQUIPO ────────────────────────────────────────────────────────────────────
 function renderEquipo(){
