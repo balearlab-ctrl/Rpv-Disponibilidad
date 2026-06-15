@@ -372,16 +372,19 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
       <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px">
         <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500">¿Cómo es la disponibilidad parcial?</div>
         <div style="display:flex;flex-direction:column;gap:6px" id="parcial-tipo-row">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
-            <input type="radio" name="parcial-tipo" value="hasta" checked onchange="setParcialTipo('hasta')" style="accent-color:var(--brand);width:16px;height:16px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);transition:all .15s" onclick="setParcialTipo('hasta');this.parentElement.querySelectorAll('label').forEach(l=>l.style.borderColor='var(--border)');this.style.borderColor='var(--green)';this.style.background='var(--green-bg)'">
+            <div id="pt-check-hasta" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--green);background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:13px;color:#fff"></i></div>
+            <input type="radio" name="parcial-tipo" value="hasta" checked onchange="setParcialTipo('hasta')" style="display:none">
             <div><div style="font-size:13px;font-weight:600">Disponible hasta una hora</div><div style="font-size:11px;color:var(--text3)">Ej: disponible hasta las 20:00, luego cena</div></div>
           </label>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
-            <input type="radio" name="parcial-tipo" value="desde" onchange="setParcialTipo('desde')" style="accent-color:var(--brand);width:16px;height:16px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);transition:all .15s" onclick="setParcialTipo('desde');this.parentElement.querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--border)';l.style.background='var(--bg2)'});this.style.borderColor='var(--green)';this.style.background='var(--green-bg)'">
+            <div id="pt-check-desde" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+            <input type="radio" name="parcial-tipo" value="desde" onchange="setParcialTipo('desde')" style="display:none">
             <div><div style="font-size:13px;font-weight:600">Disponible a partir de una hora</div><div style="font-size:11px;color:var(--text3)">Ej: llega tarde, disponible desde las 11:00</div></div>
           </label>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
-            <input type="radio" name="parcial-tipo" value="tramo" onchange="setParcialTipo('tramo')" style="accent-color:var(--brand);width:16px;height:16px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);transition:all .15s" onclick="setParcialTipo('tramo');this.parentElement.querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--border)';l.style.background='var(--bg2)'});this.style.borderColor='var(--green)';this.style.background='var(--green-bg)'">
+            <div id="pt-check-tramo" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+            <input type="radio" name="parcial-tipo" value="tramo" onchange="setParcialTipo('tramo')" style="display:none">
             <div><div style="font-size:13px;font-weight:600">No disponible en un tramo</div><div style="font-size:11px;color:var(--text3)">Ej: no disponible de 14:00 a 16:00</div></div>
           </label>
         </div>
@@ -1223,6 +1226,21 @@ function setParcialTipo(pt){
   document.getElementById("parcial-hasta-field").style.display=pt==="hasta"?"block":"none";
   document.getElementById("parcial-desde-field").style.display=pt==="desde"?"block":"none";
   document.getElementById("parcial-tramo-field").style.display=pt==="tramo"?"block":"none";
+  // Update check circles
+  ["hasta","desde","tramo"].forEach(v=>{
+    const el=document.getElementById("pt-check-"+v);
+    if(!el)return;
+    if(v===pt){
+      el.style.background="var(--green)";el.style.borderColor="var(--green)";
+      el.innerHTML='<i class="ti ti-check" style="font-size:13px;color:#fff"></i>';
+    } else {
+      el.style.background="transparent";el.style.borderColor="var(--border2)";
+      el.innerHTML="";
+    }
+  });
+  // Update radio input
+  const r=document.querySelector('input[name="parcial-tipo"][value="'+pt+'"]');
+  if(r)r.checked=true;
 }
 document.getElementById("fija-days-row").addEventListener("click",e=>{
   const chip=e.target.closest(".week-day-chip");if(!chip)return;
