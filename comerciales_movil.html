@@ -288,9 +288,30 @@ const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","
 let currentAgent=null,miniCalYear,miniCalMonth,indispTipo="puntual",fijaDays=[];
 const now=new Date();miniCalYear=now.getFullYear();miniCalMonth=now.getMonth();
 
-const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbx0cJg7GhLcg68W3dzWc-2gAE6I8v9DhAmuPZlU_oaAbiSQSRlkMkFaBLLcM7BzF3XY/exec",enabled:true};
-async function syncToSheets(data){try{const r=await fetch(SHEETS_CONFIG.scriptUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"saveAll",data})});}catch(e){}}
-async function loadFromSheets(){if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;try{const r=await fetch(SHEETS_CONFIG.scriptUrl+"?action=getAll");if(r.ok){const data=await r.json();if(data&&data.agents){localStorage.setItem("rpv_data",JSON.stringify(data));}}}catch(e){}}
+const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbwVjK0rQU0sbsGTtLzYrTd-wFCxhKM1m0XSH4e6KrsTNIlvzJpJmD-Qcc3hEv0qaA22/exec",enabled:true};
+async function syncToSheets(data){
+  try{ await fetch(SHEETS_CONFIG.scriptUrl+"?action=saveAll&data="+encodeURIComponent(JSON.stringify(data))); }catch(e){}
+}
+async function loadFromSheets(){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  return new Promise((resolve)=>{
+    const id='rpv_'+Date.now();
+    window[id]=function(data){
+      delete window[id];
+      const s=document.getElementById('jsonp_s');
+      if(s)s.remove();
+      if(data&&data.agents){
+        localStorage.setItem("rpv_data",JSON.stringify(data));
+      }
+      resolve();
+    };
+    const s=document.createElement('script');
+    s.id='jsonp_s';
+    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
+    s.onerror=function(){ resolve(); };
+    document.head.appendChild(s);
+  });
+}
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
 function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));if(SHEETS_CONFIG.enabled&&SHEETS_CONFIG.scriptUrl)syncToSheets(d);}
 function getDefaultData(){return{agents:[

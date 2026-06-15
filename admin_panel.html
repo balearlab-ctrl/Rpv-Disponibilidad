@@ -227,7 +227,7 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <script>
-const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbx0cJg7GhLcg68W3dzWc-2gAE6I8v9DhAmuPZlU_oaAbiSQSRlkMkFaBLLcM7BzF3XY/exec",enabled:true};
+const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbwVjK0rQU0sbsGTtLzYrTd-wFCxhKM1m0XSH4e6KrsTNIlvzJpJmD-Qcc3hEv0qaA22/exec",enabled:true};
 const COLORS=["#D94854","#9b6dff","#3ecf8e","#f5a623","#22d3ee","#f472b6","#a3e635","#60a5fa"];
 const BG_COLORS=["rgba(217,72,84,0.18)","rgba(155,109,255,0.18)","rgba(62,207,142,0.18)","rgba(245,166,35,0.18)","rgba(34,211,238,0.18)","rgba(244,114,182,0.18)","rgba(163,230,53,0.18)","rgba(96,165,250,0.18)"];
 const DIAS_SEMANA=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -246,8 +246,47 @@ function getDefaultData(){return{agents:[
   {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[0,6]}
 ],indisponibilidades:[],nextId:6};}
 
-async function syncToSheets(data){try{const r=await fetch(SHEETS_CONFIG.scriptUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"saveAll",data})});const ok=r.ok;document.getElementById("sync-dot").className="sync-dot"+(ok?"":' offline');document.getElementById("sync-text").textContent=ok?"Sincronizado":"Error sync";}catch(e){document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Sin conexión";}}
-async function loadFromSheets(){if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;try{const r=await fetch(SHEETS_CONFIG.scriptUrl+"?action=getAll");if(r.ok){const data=await r.json();if(data&&data.agents){localStorage.setItem("rpv_data",JSON.stringify(data));document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";renderDashboard();}}}catch(e){}}
+async function syncToSheets(data){
+  try{
+    await fetch(SHEETS_CONFIG.scriptUrl+"?action=saveAll&data="+encodeURIComponent(JSON.stringify(data)));
+    document.getElementById("sync-dot").className="sync-dot";
+    document.getElementById("sync-text").textContent="Sincronizado";
+  }catch(e){
+    document.getElementById("sync-dot").className="sync-dot offline";
+    document.getElementById("sync-text").textContent="Sin conexión";
+  }
+}
+async function loadFromSheets(){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  try{
+    const r=await fetch(SHEETS_CONFIG.scriptUrl+"?action=getAll",{mode:"no-cors"});
+  }catch(e){}
+  // Use JSONP instead
+  return new Promise((resolve)=>{
+    const id='rpv_'+Date.now();
+    window[id]=function(data){
+      delete window[id];
+      const s=document.getElementById('jsonp_s');
+      if(s)s.remove();
+      if(data&&data.agents){
+        localStorage.setItem("rpv_data",JSON.stringify(data));
+        document.getElementById("sync-dot").className="sync-dot";
+        document.getElementById("sync-text").textContent="Sincronizado";
+        renderDashboard();
+      }
+      resolve();
+    };
+    const s=document.createElement('script');
+    s.id='jsonp_s';
+    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
+    s.onerror=function(){
+      document.getElementById("sync-dot").className="sync-dot offline";
+      document.getElementById("sync-text").textContent="Sin conexión";
+      resolve();
+    };
+    document.head.appendChild(s);
+  });
+}
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
 function fmtDate(d){return d.toISOString().slice(0,10);}
