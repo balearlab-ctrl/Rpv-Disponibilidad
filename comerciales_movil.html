@@ -290,25 +290,43 @@ const now=new Date();miniCalYear=now.getFullYear();miniCalMonth=now.getMonth();
 
 const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbwVjK0rQU0sbsGTtLzYrTd-wFCxhKM1m0XSH4e6KrsTNIlvzJpJmD-Qcc3hEv0qaA22/exec",enabled:true};
 async function syncToSheets(data){
-  try{ await fetch(SHEETS_CONFIG.scriptUrl+"?action=saveAll&data="+encodeURIComponent(JSON.stringify(data))); }catch(e){}
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  return new Promise((resolve)=>{
+    const id='rpv_save_'+Date.now();
+    window[id]=function(result){
+      const s=document.getElementById('jsonp_save_s');if(s)s.remove();
+      delete window[id];resolve();
+    };
+    const s=document.createElement('script');
+    s.id='jsonp_save_s';
+    s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
+    s.onerror=function(){
+      const se=document.getElementById('jsonp_save_s');if(se)se.remove();
+      delete window[id];resolve();
+    };
+    document.head.appendChild(s);
+  });
 }
 async function loadFromSheets(){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
   return new Promise((resolve)=>{
     const id='rpv_'+Date.now();
     window[id]=function(data){
-      delete window[id];
-      const s=document.getElementById('jsonp_s');
-      if(s)s.remove();
-      if(data&&data.agents){
-        localStorage.setItem("rpv_data",JSON.stringify(data));
-      }
-      resolve();
+      try{
+        if(data&&data.agents&&data.agents.length>0){
+          localStorage.setItem("rpv_data",JSON.stringify(data));
+        }
+      }catch(e){}
+      const s=document.getElementById('jsonp_s');if(s)s.remove();
+      delete window[id];resolve();
     };
     const s=document.createElement('script');
     s.id='jsonp_s';
     s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
-    s.onerror=function(){ resolve(); };
+    s.onerror=function(){
+      const se=document.getElementById('jsonp_s');if(se)se.remove();
+      delete window[id];resolve();
+    };
     document.head.appendChild(s);
   });
 }
@@ -337,7 +355,13 @@ function getAgentStatus(agent,date){
   return"disponible";}
 
 async function initLoginScreen(){
-await loadFromSheets();
+  // load from sheets in background, don't block UI
+  loadFromSheets().then(()=>{
+    // refresh select after sheets load
+    const d=getData();
+    const sel=document.getElementById("login-name");
+    if(sel) sel.innerHTML="<option value=''>Selecciona tu nombre...</option>"+d.agents.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join("");
+  });
   const d=getData();
   const sel=document.getElementById("login-name");
   sel.innerHTML="<option value=''>Selecciona tu nombre...</option>"+d.agents.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join("");

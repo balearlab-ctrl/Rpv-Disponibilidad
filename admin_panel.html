@@ -247,20 +247,60 @@ function getDefaultData(){return{agents:[
 ],indisponibilidades:[],nextId:6};}
 
 async function syncToSheets(data){
-  try{
-    await fetch(SHEETS_CONFIG.scriptUrl+"?action=saveAll&data="+encodeURIComponent(JSON.stringify(data)));
-    document.getElementById("sync-dot").className="sync-dot";
-    document.getElementById("sync-text").textContent="Sincronizado";
-  }catch(e){
-    document.getElementById("sync-dot").className="sync-dot offline";
-    document.getElementById("sync-text").textContent="Sin conexión";
-  }
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  return new Promise((resolve)=>{
+    const id='rpv_save_'+Date.now();
+    window[id]=function(result){
+      try{
+        if(result&&result.ok){
+          document.getElementById("sync-dot").className="sync-dot";
+          document.getElementById("sync-text").textContent="Sincronizado";
+        }
+      }catch(e){}
+      const s=document.getElementById('jsonp_save_s');if(s)s.remove();
+      delete window[id];resolve();
+    };
+    const s=document.createElement('script');
+    s.id='jsonp_save_s';
+    s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
+    s.onerror=function(){
+      try{
+        document.getElementById("sync-dot").className="sync-dot offline";
+        document.getElementById("sync-text").textContent="Error sync";
+      }catch(e){}
+      const se=document.getElementById('jsonp_save_s');if(se)se.remove();
+      delete window[id];resolve();
+    };
+    document.head.appendChild(s);
+  });
 }
 async function loadFromSheets(){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
-  try{
-    const r=await fetch(SHEETS_CONFIG.scriptUrl+"?action=getAll",{mode:"no-cors"});
-  }catch(e){}
+  return new Promise((resolve)=>{
+    const id='rpv_'+Date.now();
+    window[id]=function(data){
+      try{
+        if(data&&data.agents&&data.agents.length>0){
+          localStorage.setItem("rpv_data",JSON.stringify(data));
+          document.getElementById("sync-dot").className="sync-dot";
+          document.getElementById("sync-text").textContent="Sincronizado";
+        }
+      }catch(e){}
+      const s=document.getElementById('jsonp_s');if(s)s.remove();
+      delete window[id];resolve();
+    };
+    const s=document.createElement('script');
+    s.id='jsonp_s';
+    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
+    s.onerror=function(){
+      document.getElementById("sync-dot").className="sync-dot offline";
+      document.getElementById("sync-text").textContent="Sin conexión";
+      const se=document.getElementById('jsonp_s');if(se)se.remove();
+      delete window[id];resolve();
+    };
+    document.head.appendChild(s);
+  });
+}
   // Use JSONP instead
   return new Promise((resolve)=>{
     const id='rpv_'+Date.now();
@@ -487,7 +527,6 @@ function renderIndisponibilidades(){
       <td style="color:var(--text2)">${i.motivo||"—"}${i.descripcion?`<br><span style="font-size:11px;color:var(--text3);font-style:italic">"${i.descripcion}"</span>`:""}</td>
     </tr>`}).join("")||"<tr><td colspan='6' style='text-align:center;color:var(--text3);padding:32px'>Sin indisponibilidades</td></tr>";}
 
-let libreSelDays=[0,6];
 function openModalAdd(airport){
   libreSelDays=[0,6];
   document.getElementById("modal-agent-title").textContent="Nuevo comercial";
@@ -526,8 +565,14 @@ function confirmDelete(){const d=getData();d.agents=d.agents.filter(a=>a.id!==de
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open");}));
+// Always ensure default data exists
 if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
-renderDashboard();loadFromSheets();
+renderDashboard();
+// Try to load from Sheets and refresh
+(async function(){
+  await loadFromSheets();
+  renderDashboard();
+})();
 </script>
 </body>
 </html>
