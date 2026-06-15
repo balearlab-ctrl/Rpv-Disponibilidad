@@ -130,6 +130,36 @@ textarea{resize:vertical;min-height:70px}
 .sync-dot.offline{background:var(--amber);box-shadow:0 0 6px var(--amber)}
 @media(max-width:900px){.airports-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
 @media(max-width:640px){main{padding:16px}.nav-tabs{display:none}}
+
+/* CALENDAR TOOLTIP */
+.cal-tip-popup {
+  position:fixed;
+  z-index:9999;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:12px 14px;
+  min-width:200px;
+  max-width:280px;
+  pointer-events:none;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  font-size:12px;
+}
+.cal-tip-header {
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.cal-tip-badge {
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;
+}
+.cal-tip-name { font-size:13px;font-weight:700;color:var(--text); }
+.cal-tip-date { font-size:11px;color:var(--text3);margin-top:1px; }
+.cal-tip-row { display:flex;gap:6px;align-items:flex-start;margin-bottom:5px; }
+.cal-tip-row:last-child { margin-bottom:0; }
+.cal-tip-icon { font-size:13px;flex-shrink:0;margin-top:1px; }
+.cal-tip-val { color:var(--text2);line-height:1.4; }
+.cal-tip-val strong { color:var(--text); }
+.cal-tip-conflict { background:rgba(217,72,84,0.15);border:1px solid rgba(217,72,84,0.3);border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px;color:var(--brand-light); }
 </style>
 </head>
 <body>
@@ -177,11 +207,12 @@ textarea{resize:vertical;min-height:70px}
     <div class="section-header">
       <span class="section-title">Disponibilidad del equipo</span>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot ld-libre"></div> Libre fijo</div>
-        <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid var(--amber)"></div> Libre puntual</div>
-        <div class="legend-item"><div class="legend-dot ld-nodisp"></div> No disponible</div>
-        <div class="legend-item"><div class="legend-dot ld-fija"></div> No disp. fija</div>
-        <div class="legend-item"><div class="legend-dot" style="background:rgba(217,72,84,0.25);border:1px solid var(--brand)"></div> ⚠️ Conflicto</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre fijo</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.12);border:1px dashed rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre puntual</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.18);border:1px solid rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disponible</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.1);border:1px dashed rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disp. fija</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(217,72,84,0.25);border:1px solid var(--brand);position:relative"><div style="position:absolute;top:-1px;right:-1px;width:5px;height:5px;border-radius:50%;background:var(--brand)"></div></div> Conflicto</div>
+        <div class="legend-item" style="color:var(--text3);font-size:11px"><i class="ti ti-hand-finger" style="font-size:12px"></i> Pasa el ratón para ver detalles</div>
       </div>
     </div>
     <div class="cal-controls">
@@ -540,11 +571,17 @@ function renderCalendar(){
       </div>
       ${days.map(dy=>{
         const s=getAgentStatus(a,dy.dt);const ds=fmtDate(dy.dt);
-        let bg="transparent",color="var(--text3)",txt="·";
-        if(s==="libre"){bg="var(--amber-bg)";color="var(--amber)";txt="L";}
-        else if(s==="libre-puntual"){bg="rgba(245,166,35,0.2)";color="var(--amber)";txt="L";}
-        else if(s==="no-disponible"){bg="var(--red-bg)";color="var(--red)";txt="✕";}
-        else if(s==="no-disp-fija"){bg="rgba(229,83,75,.22)";color="var(--red)";txt="✕";}
+        // Color scheme: each status has a distinct visual
+        let bg="transparent",color="var(--text3)",txt="·",border="none";
+        if(s==="libre"){
+          bg="rgba(245,166,35,0.2)";color="var(--amber)";txt="L";border="1px solid rgba(245,166,35,0.5)";
+        } else if(s==="libre-puntual"){
+          bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";border="1px dashed rgba(245,166,35,0.5)";
+        } else if(s==="no-disponible"){
+          bg="rgba(229,83,75,0.18)";color="var(--red)";txt="✕";border="1px solid rgba(229,83,75,0.4)";
+        } else if(s==="no-disp-fija"){
+          bg="rgba(229,83,75,0.1)";color="var(--red)";txt="✕";border="1px dashed rgba(229,83,75,0.4)";
+        }
         const otrosLibres=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(
           (x.libresSemana||[]).includes(dy.dow)||
           (x.diasLibresPuntuales||[]).includes(ds)));
@@ -555,14 +592,31 @@ function renderCalendar(){
           if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
           if(i.tipo==="fija")return(i.dias||[]).includes(dy.dow);return false;});
         const com=(a.libresComentarios||{})[ds];
-        const tipArr=[];
-        if(conflict)tipArr.push("⚠️ "+otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", ")+" también libre");
-        if(com)tipArr.push(com);
-        if(indisp&&indisp.motivo)tipArr.push(indisp.motivo);
-        const tip=tipArr.length?` title="${tipArr.join(" · ").replace(/"/g,"&quot;")}"`:"";
-        const out=ds<today?"opacity:.35;":"";const hoy=ds===today?"outline:2px solid var(--brand);outline-offset:-2px;":"";
-        return`<div${tip} style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;${out}${hoy}cursor:default;position:relative">
+        const ts=(a.libresTimestamps||{})[ds];
+        // Build rich tooltip data
+        const tooltipId="tip_"+a.id+"_"+ds.replace(/-/g,"");
+        const out=ds<today?"opacity:.4;":"";const hoy=ds===today?"outline:2px solid var(--brand);outline-offset:-2px;":"";
+        return`<div
+          style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;border:${border};${out}${hoy}cursor:${s==="disponible"?"default":"pointer"};position:relative"
+          onmouseenter="showCalTip(event,'${tooltipId}')"
+          onmouseleave="hideCalTip()">
           ${txt}${conflict?`<div style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--brand)"></div>`:""}
+          <div id="${tooltipId}" class="cal-tooltip" style="display:none"
+            data-status="${s}"
+            data-name="${a.nombre}"
+            data-ds="${ds}"
+            data-conflict="${conflict}"
+            data-conflict-names="${conflict?otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", "):""}"
+            data-indisp-tipo="${indisp?indisp.tipo:""}"
+            data-indisp-motivo="${indisp?(indisp.motivo||"").replace(/"/g,"&quot;"):""}"
+            data-indisp-desc="${indisp?(indisp.descripcion||"").replace(/"/g,"&quot;"):""}"
+            data-indisp-tramo="${indisp?(indisp.tramo||""):""}"
+            data-indisp-desde="${indisp?(indisp.desde||""):""}"
+            data-indisp-hasta="${indisp?(indisp.hasta||""):""}"
+            data-indisp-dias="${indisp?(indisp.dias||[]).join(","):""}"
+            data-libre-com="${(com||"").replace(/"/g,"&quot;")}"
+            data-libre-ts="${ts||""}"
+          ></div>
         </div>`;
       }).join("")}
     </div>`;}
@@ -810,6 +864,147 @@ document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("cli
 if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
 renderDashboard();
 loadFromSheets();
+// ── CALENDAR TOOLTIP ─────────────────────────────────────────────────────────
+let calTipEl = null;
+function showCalTip(e, tooltipId) {
+  const dataEl = document.getElementById(tooltipId);
+  if (!dataEl) return;
+  const s = dataEl.dataset.status;
+  if (s === "disponible") return; // no tooltip for available
+
+  if (!calTipEl) {
+    calTipEl = document.createElement("div");
+    calTipEl.className = "cal-tip-popup";
+    document.body.appendChild(calTipEl);
+  }
+
+  const MESES_TIP = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const DS_TIP = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  const DS_ES_TIP = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+
+  const ds = dataEl.dataset.ds;
+  const dt = new Date(ds + "T00:00:00");
+  const dateStr = DS_ES_TIP[dt.getDay()] + " " + dt.getDate() + " " + MESES_TIP[dt.getMonth()];
+
+  const name = dataEl.dataset.name;
+  const conflict = dataEl.dataset.conflict === "true";
+  const conflictNames = dataEl.dataset.conflictNames;
+  const iTipo = dataEl.dataset.indispTipo;
+  const iMotivo = dataEl.dataset.indispMotivo;
+  const iDesc = dataEl.dataset.indispDesc;
+  const iTramo = dataEl.dataset.indispTramo;
+  const iDesde = dataEl.dataset.indispDesde;
+  const iHasta = dataEl.dataset.indispHasta;
+  const iDias = dataEl.dataset.indispDias;
+  const libCom = dataEl.dataset.libreCom;
+  const libTs = dataEl.dataset.libreTs;
+
+  // Status config
+  const statusConfig = {
+    "libre":        { color:"var(--amber)",    bg:"rgba(245,166,35,0.15)",   label:"Día libre fijo",      icon:"ti-sun" },
+    "libre-puntual":{ color:"var(--amber)",    bg:"rgba(245,166,35,0.1)",    label:"Día libre puntual",   icon:"ti-calendar-check" },
+    "no-disponible":{ color:"var(--red)",      bg:"rgba(229,83,75,0.15)",    label:"No disponible",       icon:"ti-calendar-x" },
+    "no-disp-fija": { color:"var(--red)",      bg:"rgba(229,83,75,0.2)",     label:"No disp. (fija)",     icon:"ti-repeat" },
+  };
+  const cfg = statusConfig[s] || { color:"var(--text3)", bg:"var(--bg3)", label:s, icon:"ti-circle" };
+
+  let html = `<div class="cal-tip-header">
+    <div style="width:30px;height:30px;border-radius:50%;background:${cfg.bg};color:${cfg.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="ti ${cfg.icon}" style="font-size:14px"></i>
+    </div>
+    <div>
+      <div class="cal-tip-name">${name.split(" ").slice(0,2).join(" ")}</div>
+      <div class="cal-tip-date">${dateStr}</div>
+    </div>
+    <span class="cal-tip-badge" style="margin-left:auto;background:${cfg.bg};color:${cfg.color}">${cfg.label}</span>
+  </div>`;
+
+  // Indisponibilidad details
+  if (iTipo) {
+    if (iMotivo) {
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-info-circle cal-tip-icon" style="color:var(--red)"></i>
+        <div class="cal-tip-val"><strong>${iMotivo}</strong></div>
+      </div>`;
+    }
+    if (iTramo) {
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-clock cal-tip-icon" style="color:var(--blue-light)"></i>
+        <div class="cal-tip-val">Horario: <strong>${iTramo}</strong></div>
+      </div>`;
+    }
+    if (iTipo === "rango" && iDesde && iHasta) {
+      const dsd=new Date(iDesde+"T00:00:00"),dsd2=new Date(iHasta+"T00:00:00");
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-calendar-stats cal-tip-icon" style="color:var(--purple)"></i>
+        <div class="cal-tip-val">Rango: <strong>${dsd.getDate()} ${MESES_TIP[dsd.getMonth()]} → ${dsd2.getDate()} ${MESES_TIP[dsd2.getMonth()]}</strong></div>
+      </div>`;
+    }
+    if (iTipo === "fija" && iDias) {
+      const dias = iDias.split(",").map(d=>DS_ES_TIP[parseInt(d)]).join(", ");
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-repeat cal-tip-icon" style="color:var(--purple)"></i>
+        <div class="cal-tip-val">Cada: <strong>${dias}</strong></div>
+      </div>`;
+    }
+    if (iDesc) {
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-message cal-tip-icon" style="color:var(--text3)"></i>
+        <div class="cal-tip-val" style="font-style:italic">"${iDesc}"</div>
+      </div>`;
+    }
+  }
+
+  // Libre details
+  if (s === "libre-puntual") {
+    if (libCom) {
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-message cal-tip-icon" style="color:var(--amber)"></i>
+        <div class="cal-tip-val" style="font-style:italic">"${libCom}"</div>
+      </div>`;
+    }
+    if (libTs) {
+      const tsDt = new Date(libTs);
+      const tsStr = tsDt.toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+      html += `<div class="cal-tip-row">
+        <i class="ti ti-clock cal-tip-icon" style="color:var(--text3)"></i>
+        <div class="cal-tip-val">Solicitado el <strong>${tsStr}</strong></div>
+      </div>`;
+    }
+  }
+
+  // Conflict warning
+  if (conflict && conflictNames) {
+    html += `<div class="cal-tip-conflict">
+      <i class="ti ti-alert-triangle"></i>
+      <strong>Conflicto:</strong> ${conflictNames} también libre este día en ${dataEl.closest("[data-ap]") ? dataEl.closest("[data-ap]").dataset.ap : "mismo aeropuerto"}
+    </div>`;
+  }
+
+  calTipEl.innerHTML = html;
+  calTipEl.style.display = "block";
+  positionCalTip(e);
+}
+
+function positionCalTip(e) {
+  if (!calTipEl) return;
+  const rect = calTipEl.getBoundingClientRect();
+  const W = window.innerWidth, H = window.innerHeight;
+  let x = e.clientX + 12, y = e.clientY + 12;
+  if (x + rect.width > W - 10) x = e.clientX - rect.width - 12;
+  if (y + rect.height > H - 10) y = e.clientY - rect.height - 12;
+  calTipEl.style.left = x + "px";
+  calTipEl.style.top = y + "px";
+}
+
+function hideCalTip() {
+  if (calTipEl) calTipEl.style.display = "none";
+}
+
+document.addEventListener("mousemove", function(e) {
+  if (calTipEl && calTipEl.style.display !== "none") positionCalTip(e);
+});
+
 </script>
 
 <!-- MODAL RESOLVER CONFLICTO -->
