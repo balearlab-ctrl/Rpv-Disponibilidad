@@ -200,7 +200,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
       <div><div class="app-header-name" id="hdr-name"></div>
         <div style="font-size:11px;color:var(--text3)" id="hdr-airport"></div></div>
       <div class="app-header-avatar" id="hdr-avatar"></div>
-      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i></button>
+      <button class="logout-btn" onclick="doLogout()" title="Cerrar sesión" style="display:flex;align-items:center;justify-content:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
   </div>
 
@@ -222,9 +222,9 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
               <div style="font-size:11px;color:var(--text3)" id="home-cal-airport"></div>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
-              <div class="cal-nav-btn" onclick="homeCalPrev()"><i class="ti ti-chevron-left"></i></div>
-              <span id="home-cal-label" style="font-size:13px;font-weight:600;min-width:110px;text-align:center"></span>
-              <div class="cal-nav-btn" onclick="homeCalNext()"><i class="ti ti-chevron-right"></i></div>
+              <button class="cal-nav-btn" onclick="homeCalPrev()" style="width:36px;height:36px;font-size:18px;background:var(--bg3);border:1px solid var(--border2)"><i class="ti ti-arrow-left"></i></button>
+              <span id="home-cal-label" style="font-size:15px;font-weight:700;min-width:120px;text-align:center;color:var(--text)"></span>
+              <button class="cal-nav-btn" onclick="homeCalNext()" style="width:36px;height:36px;font-size:18px;background:var(--bg3);border:1px solid var(--border2)"><i class="ti ti-arrow-right"></i></button>
             </div>
           </div>
           <!-- Legend -->
@@ -997,13 +997,13 @@ function buildCalHTML(agents, year, month, d){
   const firstDow=new Date(year,month,1).getDay();
   const offset=(firstDow===0?6:firstDow-1);
   const DAY_HDRS=["L","M","X","J","V","S","D"];
-  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">';
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid var(--border2)">';
   DAY_HDRS.forEach((h,i)=>{
     const isWk=i>=5;
     html+=`<div style="text-align:center;padding:7px 2px;font-size:10px;font-weight:700;color:${isWk?"var(--amber)":"var(--text3)"}">${h}</div>`;
   });
   html+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr)">';
-  for(let i=0;i<offset;i++) html+='<div style="min-height:54px;border:0.5px solid rgba(255,255,255,0.05)"></div>';
+  for(let i=0;i<offset;i++) html+='<div style="min-height:54px;border:1px solid rgba(255,255,255,0.08)"></div>';
   for(let day=1;day<=daysInMonth;day++){
     const dt=new Date(year,month,day);
     const ds=fd(dt);
@@ -1033,14 +1033,14 @@ function buildCalHTML(agents, year, month, d){
         cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px"><span style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;opacity:.8"></span><span style="font-size:9px;color:var(--red);white-space:nowrap;opacity:.8">${lbl}</span></div>`;
       }
     });
-    html+=`<div onclick="showDayPopup('${ds}')" style="min-height:54px;border:0.5px solid rgba(255,255,255,0.06);padding:3px 4px;cursor:pointer;-webkit-tap-highlight-color:rgba(217,72,84,0.1);${isToday?"background:rgba(217,72,84,0.08);outline:1px solid rgba(217,72,84,0.3);outline-offset:-1px;":""}${isPast?"opacity:.4;":""}${isWk&&!isToday?"background:rgba(255,255,255,0.02);":""}">
+    html+=`<div onclick="showDayPopup('${ds}')" style="min-height:54px;border:1px solid rgba(255,255,255,0.12);padding:3px 4px;cursor:pointer;-webkit-tap-highlight-color:rgba(217,72,84,0.1);${isToday?"background:rgba(217,72,84,0.08);outline:1px solid rgba(217,72,84,0.3);outline-offset:-1px;":""}${isPast?"opacity:.4;":""}${isWk&&!isToday?"background:rgba(255,255,255,0.02);":""}">
       <div style="font-size:11px;font-weight:700;color:${isToday?"var(--brand)":isWk?"var(--amber)":"var(--text3)"};margin-bottom:3px">${day}</div>
       ${cellContent}
     </div>`;
   }
   const totalCells=offset+daysInMonth;
   const rem=(7-totalCells%7)%7;
-  for(let i=0;i<rem;i++) html+='<div style="min-height:54px;border:0.5px solid rgba(255,255,255,0.05)"></div>';
+  for(let i=0;i<rem;i++) html+='<div style="min-height:54px;border:1px solid rgba(255,255,255,0.08)"></div>';
   html+='</div>';
   return html;
 }
