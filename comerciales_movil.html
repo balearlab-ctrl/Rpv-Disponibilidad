@@ -638,46 +638,94 @@ function showDayPopup(ds){
 
 // ── TOUR GUIADO ───────────────────────────────────────────────────────────────
 const TOUR_STEPS = [
+  // ── INICIO ─────────────────────────────────────────────────────────────────
   {
     target: "#home-status-banner",
+    tab: "home", tabIdx: 0,
     title: "Tu estado hoy",
-    text: "De un vistazo sabes si estás disponible, libre o con horario parcial hoy.",
+    text: "Aquí ves de un vistazo si hoy estás disponible, libre o con horario parcial.",
     arrow: "bottom"
   },
   {
     target: "#home-cal-content",
+    tab: "home", tabIdx: 0,
     title: "Calendario del equipo",
-    text: "Aquí ves la disponibilidad de todos tus compañeros del aeropuerto este mes. Toca cualquier día para ver el detalle de cada persona.",
+    text: "Muestra la disponibilidad de todos tus compañeros del aeropuerto este mes. Navega con las flechas ← → para cambiar de mes.",
     arrow: "top"
   },
   {
     target: "#home-initials-legend",
+    tab: "home", tabIdx: 0,
     title: "Quién es quién",
-    text: "Cada inicial del calendario corresponde a un compañero. El punto de color muestra su estado: verde disponible, amarillo libre, rojo no disponible.",
+    text: "Cada inicial corresponde a un compañero. El punto de color muestra su estado: 🟢 disponible · 🟡 libre · 🟢🔴 parcial · 🔴 no disponible. Toca cualquier día del calendario para ver el detalle.",
+    arrow: "top"
+  },
+  // ── HORARIO ─────────────────────────────────────────────────────────────────
+  {
+    target: ".bottom-nav-btn:nth-child(2)",
+    tab: "indisp", tabIdx: 1,
+    title: "Pestaña Horario",
+    text: "Aquí registras los días en los que estás disponible solo parte del día: una cena, una cita, un médico... Lo verán tus compañeros y el coordinador.",
+    arrow: "bottom"
+  },
+  {
+    target: "#tab-indisp .btn-outline",
+    tab: "indisp", tabIdx: 1,
+    title: "Añadir horario parcial",
+    text: "Toca este botón para registrar una nueva disponibilidad parcial. Puedes indicar hasta qué hora estás disponible, a partir de qué hora, o un tramo concreto sin disponibilidad.",
     arrow: "top"
   },
   {
-    target: ".bottom-nav-btn:nth-child(2)",
-    title: "Horario parcial",
-    text: "¿Tienes una cena a las 20h? ¿Una cita por la mañana? Registra aquí los días en los que estás disponible solo hasta cierta hora o a partir de cierta hora.",
-    arrow: "bottom"
+    target: "#my-indisp-list",
+    tab: "indisp", tabIdx: 1,
+    title: "Tus horarios registrados",
+    text: "Aquí aparecen todos tus horarios parciales activos. Toca el icono 🗑 para eliminar alguno.",
+    arrow: "top"
   },
+  // ── MIS LIBRES ──────────────────────────────────────────────────────────────
   {
     target: ".bottom-nav-btn:nth-child(3)",
-    title: "Mis libres",
-    text: "Aquí marcas los días que no trabajas. Los fijos se repiten cada semana. Los puntuales los acuerdas semana a semana con el equipo.",
+    tab: "libres", tabIdx: 2,
+    title: "Pestaña Mis libres",
+    text: "Aquí gestionas tus días libres: los que se repiten cada semana y los acordados puntualmente con el equipo.",
     arrow: "bottom"
   },
+  {
+    target: "#dias-fijos-grid",
+    tab: "libres", tabIdx: 2,
+    title: "Días libres fijos",
+    text: "Toca los días de la semana que siempre tienes libres. Se marcan en amarillo. Aparecerán automáticamente en el calendario cada semana. Pulsa Guardar al terminar.",
+    arrow: "top",
+    skipIfNoFijos: true
+  },
+  {
+    target: "#semanas-libres-container",
+    tab: "libres", tabIdx: 2,
+    title: "Días libres por semanas",
+    text: "Marca aquí los días libres acordados con el equipo semana a semana. Se muestran 8 semanas. Si otro compañero del mismo aeropuerto ya tiene ese día marcado, recibirás un aviso — es solo informativo por precaución, puede que ya lo tengáis acordado así.",
+    arrow: "top"
+  },
+  // ── EQUIPO ──────────────────────────────────────────────────────────────────
   {
     target: ".bottom-nav-btn:nth-child(4)",
-    title: "Equipo",
-    text: "Ve quién está disponible hoy y los días libres fijos de cada compañero.",
+    tab: "equipo", tabIdx: 3,
+    title: "Pestaña Equipo",
+    text: "Ve quién está disponible hoy y los días libres fijos de cada compañero de tu aeropuerto.",
     arrow: "bottom"
   },
   {
+    target: "#team-today",
+    tab: "equipo", tabIdx: 3,
+    title: "Disponibilidad hoy",
+    text: "Estado actual de cada compañero: disponible, libre, parcial o no disponible.",
+    arrow: "top"
+  },
+  // ── FIN ─────────────────────────────────────────────────────────────────────
+  {
     target: ".logout-btn:first-of-type",
-    title: "¡Ya está todo!",
-    text: "Ya conoces la app. Si quieres volver a ver este tour, toca el botón ❓ en la cabecera.",
+    tab: "home", tabIdx: 0,
+    title: "¡Ya lo sabes todo!",
+    text: "Tour completado. Toca el botón ❓ en la cabecera para volver a verlo cuando quieras.",
     arrow: "top",
     last: true
   }
@@ -686,11 +734,11 @@ const TOUR_STEPS = [
 let tourStep = 0;
 
 function startTour(){
-  // First make sure we're on the home tab
-  showTab("home", 0);
   tourStep = 0;
+  const first = TOUR_STEPS[0];
+  if(first.tab) showTab(first.tab, first.tabIdx);
   document.getElementById("tour-backdrop").style.display = "block";
-  showTourStep();
+  setTimeout(showTourStep, 100);
 }
 
 function showTourStep(){
@@ -721,59 +769,77 @@ function showTourStep(){
 
   // Position highlight
   if(target){
-    const r = target.getBoundingClientRect();
-    const pad = 6;
-    highlight.style.display = "block";
-    highlight.style.top = (r.top - pad) + "px";
-    highlight.style.left = (r.left - pad) + "px";
-    highlight.style.width = (r.width + pad*2) + "px";
-    highlight.style.height = (r.height + pad*2) + "px";
+    // Scroll into view if needed
+    target.scrollIntoView({behavior:"smooth", block:"center"});
+    setTimeout(()=>{
+      const r = target.getBoundingClientRect();
+      const pad = 6;
+      highlight.style.display = "block";
+      highlight.style.top = (r.top - pad) + "px";
+      highlight.style.left = (r.left - pad) + "px";
+      highlight.style.width = (r.width + pad*2) + "px";
+      highlight.style.height = (r.height + pad*2) + "px";
 
-    // Position bubble
-    bubble.style.display = "block";
-    const bw = 280, bh = 160;
-    const W = window.innerWidth, H = window.innerHeight;
+      // Position bubble
+      bubble.style.display = "block";
+      bubble.style.transform = "";
+      const bw = Math.min(280, window.innerWidth - 20);
+      const bh = 180;
+      const W = window.innerWidth, H = window.innerHeight;
 
-    let bTop, bLeft;
-    if(step.arrow === "bottom" || r.top > H/2){
-      // Bubble above target
-      bTop = r.top - pad - bh - 16;
-      bubble.style.setProperty("--arrow-top", "auto");
-      bubble.querySelector && null;
-    } else {
-      // Bubble below target
-      bTop = r.bottom + pad + 16;
-    }
-    bLeft = Math.max(10, Math.min(r.left + r.width/2 - bw/2, W - bw - 10));
-    if(bTop < 10) bTop = r.bottom + pad + 16;
-    if(bTop + bh > H - 10) bTop = r.top - pad - bh - 16;
+      let bTop, bLeft;
+      if(step.arrow === "bottom" || r.top > H * 0.55){
+        bTop = r.top - pad - bh - 16;
+      } else {
+        bTop = r.bottom + pad + 16;
+      }
+      bLeft = Math.max(10, Math.min(r.left + r.width/2 - bw/2, W - bw - 10));
+      if(bTop < 10) bTop = r.bottom + pad + 16;
+      if(bTop + bh > H - 10) bTop = Math.max(10, r.top - pad - bh - 16);
 
-    bubble.style.top = bTop + "px";
-    bubble.style.left = bLeft + "px";
-    bubble.style.maxWidth = (W - 20) + "px";
+      bubble.style.top = bTop + "px";
+      bubble.style.left = bLeft + "px";
+      bubble.style.maxWidth = bw + "px";
+    }, 200);
   } else {
     // No target — center on screen
     highlight.style.display = "none";
     bubble.style.display = "block";
+    bubble.style.transform = "translate(-50%,-50%)";
     bubble.style.top = "50%";
     bubble.style.left = "50%";
-    bubble.style.transform = "translate(-50%,-50%)";
   }
 }
 
 function tourNext(){
   tourStep++;
   if(tourStep >= TOUR_STEPS.length){ endTour(); return; }
+  // Skip steps that should be skipped based on user's data
+  while(tourStep < TOUR_STEPS.length && shouldSkipStep(TOUR_STEPS[tourStep])){
+    tourStep++;
+  }
+  if(tourStep >= TOUR_STEPS.length){ endTour(); return; }
   const step = TOUR_STEPS[tourStep];
-  // Switch to home for first 3 steps, navigate tabs for later steps to show content
-  if(tourStep <= 2) showTab("home",0);
-  setTimeout(showTourStep, 50);
+  if(step.tab) showTab(step.tab, step.tabIdx);
+  setTimeout(showTourStep, 300);
+}
+
+function shouldSkipStep(step){
+  if(step.skipIfNoFijos && CA){
+    const d = gD();
+    const a = d.agents.find(x=>x.id===CA.id);
+    if(a && (!a.libresSemana || a.libresSemana.length === 0)){
+      return true; // skip: no fixed days configured
+    }
+  }
+  return false;
 }
 
 function endTour(){
   document.getElementById("tour-backdrop").style.display = "none";
   document.getElementById("tour-highlight").style.display = "none";
   document.getElementById("tour-bubble").style.display = "none";
+  if(calTipEl) calTipEl.style.display = "none";
   showTab("home", 0);
   localStorage.setItem("rpv_tour_done","1");
 }
@@ -1360,7 +1426,7 @@ initApp();
         <span id="conflict-day" style="font-weight:600;color:var(--text)"></span>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:10px;background:var(--bg3);border-radius:var(--radius-sm);padding:8px 12px">
-        El coordinador verá quién lo pidió primero. ¿Quieres apuntarte igualmente?
+        Es solo un aviso informativo — puede que ya lo tengáis acordado así. El coordinador verá quién lo pidió primero. ¿Quieres apuntarte igualmente?
       </div>
     </div>
     <div style="display:flex;gap:10px">
