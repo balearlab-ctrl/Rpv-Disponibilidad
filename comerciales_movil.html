@@ -78,7 +78,13 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .mini-cal-cell.libre{background:var(--amber-bg);color:var(--amber);font-weight:700}
 .mini-cal-cell.libre-puntual{background:rgba(245,166,35,0.25);color:var(--amber);font-weight:700}
 .mini-cal-cell.no-disp{background:var(--red-bg);color:var(--red);font-weight:700}
-.mini-cal-cell.parcial{background:rgba(74,127,255,0.15);color:var(--blue-light);font-weight:700}
+.mini-cal-cell.parcial{background:transparent;color:var(--text);font-weight:700}
+.mini-cal-cell .dots{display:flex;gap:2px;justify-content:center;margin-top:2px}
+.mini-cal-cell .dot{width:5px;height:5px;border-radius:50%}
+.mini-cal-cell .dot-green{background:var(--green)}
+.mini-cal-cell .dot-red{background:var(--red)}
+.mini-cal-cell .dot-amber{background:var(--amber)}
+.mini-cal-cell .dot-blue{background:var(--blue-light)}
 .mini-cal-cell.no-disp-fija{background:rgba(229,83,75,.22);color:var(--red);font-weight:700}
 .mini-cal-cell.past{opacity:.3}
 
@@ -268,6 +274,25 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
     </div>
 
+    <!-- CALENDARIO COMPARTIDO -->
+    <div id="tab-calendario" class="tab-page">
+      <div class="sec-title" style="margin-bottom:4px">Calendario del equipo</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Disponibilidad de todos · <span id="cal-airport-label" style="color:var(--brand-light)"></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="cal-nav-btn" onclick="teamCalPrev()"><i class="ti ti-chevron-left"></i></div>
+        <span id="team-cal-label" style="font-size:13px;font-weight:600"></span>
+        <div class="cal-nav-btn" onclick="teamCalNext()"><i class="ti ti-chevron-right"></i></div>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--text2)">
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Disponible</div>
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block"></span>Libre</div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="display:flex;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;margin-top:2px"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--red);display:inline-block;margin-top:2px"></span></div>Parcial</div>
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>No disponible</div>
+      </div>
+      <div id="team-cal-content"></div>
+    </div>
+
     <!-- EQUIPO -->
     <div id="tab-equipo" class="tab-page">
       <div class="sec-title" style="margin-bottom:12px">Disponibilidad hoy</div>
@@ -282,7 +307,8 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
     <button class="bottom-nav-btn active" onclick="showTab('home',0)"><i class="ti ti-home"></i>Inicio</button>
     <button class="bottom-nav-btn" onclick="showTab('indisp',1)"><i class="ti ti-calendar-off"></i>No disponible</button>
     <button class="bottom-nav-btn" onclick="showTab('libres',2)"><i class="ti ti-sun"></i>Mis libres</button>
-    <button class="bottom-nav-btn" onclick="showTab('equipo',3)"><i class="ti ti-users"></i>Equipo</button>
+    <button class="bottom-nav-btn" onclick="showTab('calendario',3)"><i class="ti ti-calendar-month"></i>Equipo</button>
+    <button class="bottom-nav-btn" onclick="showTab('equipo',4)"><i class="ti ti-users"></i>Personas</button>
   </div>
 </div>
 
@@ -496,6 +522,7 @@ function showTab(name,idx){
   if(name==="home")renderHome();
   if(name==="indisp")renderIndisp();
   if(name==="libres")renderLibres();
+  if(name==="calendario")renderTeamCal();
   if(name==="equipo")renderEquipo();
 }
 
@@ -537,7 +564,11 @@ function renderMiniCal(){
     else if(s==="parcial")cls+=" parcial";
     else if(s==="no-disp")cls+=" no-disp";
     else if(s==="no-disp-fija")cls+=" no-disp-fija";
-    h+=`<div class="${cls}">${day}</div>`;
+    if(s==="parcial"){
+      h+=`<div class="${cls}" style="position:relative">${day}<div class="dots"><span class="dot dot-green"></span><span class="dot dot-red"></span></div></div>`;
+    } else {
+      h+=`<div class="${cls}">${day}</div>`;
+    }
   }
   h+="</div>";document.getElementById("mini-cal").innerHTML=h;
 }
@@ -800,6 +831,110 @@ function saveIndisp(){
   else if(iTipo==="fija"){if(!fDays.length){alert("Selecciona al menos un día");return;}obj.dias=[...fDays];}
   d.indisponibilidades.push(obj);d.nextId++;
   sD(d);closeModal("modal-indisp");renderIndisp();renderMiniCal();
+}
+
+// ── CALENDARIO COMPARTIDO ────────────────────────────────────────────────────
+let teamCalYear, teamCalMonth;
+(function(){const n=new Date();teamCalYear=n.getFullYear();teamCalMonth=n.getMonth();})();
+
+function teamCalPrev(){teamCalMonth--;if(teamCalMonth<0){teamCalMonth=11;teamCalYear--;}renderTeamCal();}
+function teamCalNext(){teamCalMonth++;if(teamCalMonth>11){teamCalMonth=0;teamCalYear++;}renderTeamCal();}
+
+function renderTeamCal(){
+  if(!CA)return;
+  const d=gD();
+  const todayStr=fd(new Date());
+  const daysInMonth=new Date(teamCalYear,teamCalMonth+1,0).getDate();
+  const MESES_N=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  document.getElementById("team-cal-label").textContent=MESES_N[teamCalMonth]+" "+teamCalYear;
+  document.getElementById("cal-airport-label").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
+
+  // Only show agents from same airport
+  const agents=d.agents.filter(a=>a.aeropuerto===CA.aeropuerto);
+
+  // Build 7-column week view
+  // Find first day of month
+  const firstDow=new Date(teamCalYear,teamCalMonth,1).getDay();
+  // firstDow: 0=Sun,1=Mon... adjust to Mon-first
+  const offset=(firstDow===0?6:firstDow-1);
+
+  let html='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
+
+  // Day headers Mon-Sun
+  const DAY_HDRS=["L","M","X","J","V","S","D"];
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">';
+  DAY_HDRS.forEach((h,i)=>{
+    const isWk=i>=5;
+    html+=`<div style="text-align:center;padding:8px 2px;font-size:10px;font-weight:700;color:${isWk?"var(--amber)":"var(--text3)"}">${h}</div>`;
+  });
+  html+='</div>';
+
+  // Days grid
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+
+  // Empty cells before first day
+  for(let i=0;i<offset;i++){
+    html+='<div style="min-height:52px;border:0.5px solid var(--border);opacity:.2"></div>';
+  }
+
+  for(let day=1;day<=daysInMonth;day++){
+    const dt=new Date(teamCalYear,teamCalMonth,day);
+    const ds=fd(dt);
+    const isToday=ds===todayStr;
+    const isPast=ds<todayStr;
+    const dow=dt.getDay(); // 0=Sun
+    const isWk=dow===0||dow===6;
+
+    // Get status for each agent this day
+    const agentStatuses=agents.map(a=>({a,s:status(a,dt)}));
+
+    // Build dots or names
+    let cellContent='';
+    agentStatuses.forEach(({a,s:s2})=>{
+      const ini=getInitials(a.nombre);
+      if(s2==="disponible"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+          <span style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden">${ini}</span>
+        </div>`;
+      } else if(s2==="libre"||s2==="libre-puntual"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
+          <span style="font-size:9px;color:var(--amber);white-space:nowrap;overflow:hidden;font-weight:600">${ini}</span>
+        </div>`;
+      } else if(s2==="parcial"){
+        // Two dots: green + red
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
+          <span style="width:4px;height:4px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+          <span style="width:4px;height:4px;border-radius:50%;background:var(--red);flex-shrink:0"></span>
+          <span style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden">${ini}</span>
+        </div>`;
+      } else if(s2==="no-disp"||s2==="no-disponible"||s2==="no-disp-fija"){
+        cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></span>
+          <span style="font-size:9px;color:var(--red);white-space:nowrap;overflow:hidden;opacity:.8">${ini}</span>
+        </div>`;
+      }
+    });
+
+    // Count available for today indicator
+    const availCount=agentStatuses.filter(({s:s2})=>s2==="disponible"||s2==="parcial").length;
+
+    html+=`<div style="min-height:52px;border:0.5px solid var(--border);padding:3px 4px;${isToday?"background:rgba(217,72,84,0.06);":""}${isPast?"opacity:.45;":""}${isWk?"background:rgba(245,166,35,0.04);":""}">
+      <div style="font-size:11px;font-weight:700;color:${isToday?"var(--brand)":isWk?"var(--amber)":"var(--text2)"};margin-bottom:3px">${day}</div>
+      ${cellContent}
+    </div>`;
+  }
+
+  // Fill remaining cells
+  const totalCells=offset+daysInMonth;
+  const remainder=(7-totalCells%7)%7;
+  for(let i=0;i<remainder;i++){
+    html+='<div style="min-height:52px;border:0.5px solid var(--border);opacity:.2"></div>';
+  }
+
+  html+='</div></div>';
+  document.getElementById("team-cal-content").innerHTML=html;
 }
 
 // ── EQUIPO ────────────────────────────────────────────────────────────────────

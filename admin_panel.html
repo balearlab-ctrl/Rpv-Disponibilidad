@@ -208,7 +208,7 @@ textarea{resize:vertical;min-height:70px}
       <span class="section-title">Disponibilidad del equipo</span>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre fijo</div>
-        <div class="legend-item"><div class="legend-dot" style="background:rgba(74,127,255,0.18);border:1px solid rgba(74,127,255,0.5)"></div> <span style="font-weight:600">½</span> Parcial</div>
+        <div class="legend-item"><div style="display:flex;gap:3px;width:12px;height:12px;align-items:center"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></span></div> Parcial</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.12);border:1px dashed rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre puntual</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.18);border:1px solid rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disponible</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.1);border:1px dashed rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disp. fija</div>
@@ -610,8 +610,9 @@ function renderCalendar(){
           bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";
           border="1px dashed rgba(245,166,35,0.5)";
         } else if(s==="parcial"){
-          bg="rgba(74,127,255,0.18)";color="var(--blue-light)";txt="½";
-          border="1px solid rgba(74,127,255,0.5)";
+          bg="transparent";color="var(--text)";txt="●";
+          border="none";
+          // Will render with two dots below
         } else if(s==="no-disponible"){
           bg="rgba(229,83,75,0.22)";color="var(--red)";txt="✕";
           border="1px solid rgba(229,83,75,0.5)";
@@ -635,12 +636,20 @@ function renderCalendar(){
         const outline=isToday?"outline:2px solid var(--brand);outline-offset:-2px;":"";
         const cursor=s==="disponible"?"":"cursor:pointer;";
 
+        const cellInner = s==="parcial"
+          ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+              <div style="display:flex;gap:3px">
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--green)"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--red)"></span>
+              </div>
+            </div>`
+          : txt+dot;
         return`<div
           data-tip="${tipId}"
           onmouseenter="showCalTip(event,this.dataset.tip)"
           onmouseleave="hideCalTip()"
           style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;border:${border};${opacity}${outline}${cursor}position:relative">
-          ${txt}${dot}
+          ${cellInner}
         </div>`;
       }).join("")}
     </div>`;}
@@ -929,7 +938,7 @@ function showCalTip(e, tipId) {
   const statusConfig = {
     "libre":        { color:"var(--amber)",    bg:"rgba(245,166,35,0.15)",   label:"Día libre fijo",      icon:"ti-sun" },
     "libre-puntual":{ color:"var(--amber)",    bg:"rgba(245,166,35,0.1)",    label:"Día libre puntual",   icon:"ti-calendar-check" },
-    "parcial":      { color:"var(--blue-light)", bg:"rgba(74,127,255,0.15)",  label:"Parcial",             icon:"ti-clock-hour-4" },
+    "parcial":      { color:"var(--text)",        bg:"rgba(62,207,142,0.1)",  label:"Disponible parcial",  icon:"ti-clock-hour-4" },
     "no-disponible":{ color:"var(--red)",      bg:"rgba(229,83,75,0.15)",    label:"No disponible",       icon:"ti-calendar-x" },
     "no-disp-fija": { color:"var(--red)",      bg:"rgba(229,83,75,0.2)",     label:"No disp. (fija)",     icon:"ti-repeat" },
   };
