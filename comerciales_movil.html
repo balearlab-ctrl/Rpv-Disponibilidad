@@ -246,26 +246,6 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
         <div id="initials-legend-content" style="display:flex;flex-direction:column;gap:7px"></div>
       </div>
 
-      <!-- Mi calendario personal (colapsable) -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
-        <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleMyCal()">
-          <div style="font-size:13px;font-weight:600"><i class="ti ti-user" style="font-size:14px;color:var(--brand);margin-right:6px"></i>Mi calendario personal</div>
-          <i class="ti ti-chevron-down" id="my-cal-chevron" style="font-size:16px;color:var(--text3);transition:transform .2s"></i>
-        </div>
-        <div id="my-cal-wrap" style="display:none;border-top:1px solid var(--border);padding:12px">
-          <div class="cal-nav" style="margin-bottom:8px">
-            <div class="cal-nav-btn" onclick="miniCalPrev()"><i class="ti ti-chevron-left"></i></div>
-            <h3 id="mini-cal-label" style="font-size:13px"></h3>
-            <div class="cal-nav-btn" onclick="miniCalNext()"><i class="ti ti-chevron-right"></i></div>
-          </div>
-          <div class="legend" style="margin-bottom:10px">
-            <div class="legend-item"><div class="legend-dot ld-libre"></div>Libre fijo</div>
-            <div class="legend-item"><div class="legend-dot ld-lp"></div>Libre puntual</div>
-            <div class="legend-item"><div class="legend-dot ld-nodisp"></div>No disponible</div>
-          </div>
-          <div class="mini-cal" id="mini-cal"></div>
-        </div>
-      </div>
 
     </div>
 
@@ -1033,14 +1013,7 @@ function teamCalPrev(){teamCalMonth--;if(teamCalMonth<0){teamCalMonth=11;teamCal
 function teamCalNext(){teamCalMonth++;if(teamCalMonth>11){teamCalMonth=0;teamCalYear++;}renderTeamCal();}
 function homeCalPrev(){homeCalMonth--;if(homeCalMonth<0){homeCalMonth=11;homeCalYear--;}renderHomeCal();}
 function homeCalNext(){homeCalMonth++;if(homeCalMonth>11){homeCalMonth=0;homeCalYear++;}renderHomeCal();}
-function toggleMyCal(){
-  const wrap=document.getElementById("my-cal-wrap");
-  const chev=document.getElementById("my-cal-chevron");
-  const open=wrap.style.display==="none";
-  wrap.style.display=open?"block":"none";
-  chev.style.transform=open?"rotate(180deg)":"";
-  if(open)renderMiniCal();
-}
+
 
 function buildCalHTML(agents, year, month, d){
   const todayStr=fd(new Date());
