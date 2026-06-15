@@ -400,7 +400,7 @@ function load(){
 }
 
 function ini(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
-function fd(d){return d.toISOString().slice(0,10);}
+function fd(d){const y=d.getFullYear();const mo=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+day;}
 function fdes(s){if(!s)return"";const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
 
 function status(agent,date){

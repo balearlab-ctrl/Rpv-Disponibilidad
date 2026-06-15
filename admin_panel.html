@@ -382,7 +382,7 @@ function loadFromSheets(){
   document.head.appendChild(s);}
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
-function fmtDate(d){return d.toISOString().slice(0,10);}
+function fmtDate(d){const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function fmtDateES(s){if(!s)return"";const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
 function fd2(dt){return dt.getDate()+" "+MESES_C[dt.getMonth()];}
 
