@@ -1016,6 +1016,7 @@ document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("cli
 if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
 renderDashboard();
 loadFromSheets();
+loadLogFromSheets();
 // ── CALENDAR TOOLTIP ─────────────────────────────────────────────────────────
 let calTipEl = null;
 function showCalTip(e, tipId) {
@@ -1182,10 +1183,45 @@ function checkAdminPass(){
 
 function getLog(){return JSON.parse(localStorage.getItem("rpv_log")||"[]");}
 function addLog(type,agentId,agentName,action,detail){
+  const entry={id:Date.now(),ts:new Date().toISOString(),type,agentId,agentName,action,detail};
+  // Save locally
   const log=getLog();
-  log.unshift({id:Date.now(),ts:new Date().toISOString(),type,agentId,agentName,action,detail});
+  log.unshift(entry);
   if(log.length>500)log.splice(500);
   localStorage.setItem("rpv_log",JSON.stringify(log));
+  // Sync to Sheets
+  syncLogToSheets(entry);
+}
+
+function syncLogToSheets(entry){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  const id='rpv_log_'+Date.now();
+  window[id]=function(){delete window[id];const s=document.getElementById('js_log');if(s)s.remove();};
+  const s=document.createElement('script');s.id='js_log';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=saveLog&callback='+id+'&entry='+encodeURIComponent(JSON.stringify(entry));
+  s.onerror=function(){delete window[id];s.remove();};
+  document.head.appendChild(s);
+}
+
+function loadLogFromSheets(){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  const id='rpv_logl_'+Date.now();
+  window[id]=function(data){
+    delete window[id];const s=document.getElementById('js_logl');if(s)s.remove();
+    if(data&&data.entries&&data.entries.length>0){
+      // Convert sheets format back to local format
+      const entries=data.entries.map(e=>({
+        id:e.id, ts:e.date+'T'+e.time, type:e.type,
+        agentId:e.agentId, agentName:e.agentName,
+        action:e.action, detail:e.detail
+      }));
+      localStorage.setItem("rpv_log",JSON.stringify(entries));
+    }
+  };
+  const s=document.createElement('script');s.id='js_logl';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=getLog&callback='+id+'&limit=500';
+  s.onerror=function(){delete window[id];s.remove();};
+  document.head.appendChild(s);
 }
 function clearLog(){
   if(!confirm("¿Borrar todo el log?"))return;
