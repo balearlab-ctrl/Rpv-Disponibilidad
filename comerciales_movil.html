@@ -455,7 +455,11 @@ let CA=null,mcY,mcM,iTipo="puntual",fDays=[];
 const N=new Date();mcY=N.getFullYear();mcM=N.getMonth();
 const SEMANAS_MOSTRAR = 8; // cuántas semanas mostrar (editable)
 
-function gD(){return JSON.parse(localStorage.getItem("rpv")||"null")||defD();}
+function gD(){
+  // Try "rpv" first (mobile key), fallback to "rpv_data" (admin key), then defaults
+  const d=localStorage.getItem("rpv")||localStorage.getItem("rpv_data");
+  return JSON.parse(d||"null")||defD();
+}
 function sD(d){d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
 function defD(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[]},
@@ -497,7 +501,11 @@ function load(){
         sync(local);
       }
       refreshSel();
-    }catch(e){}
+      // Refresh home screen if visible
+      if(CA && document.getElementById("tab-home") && document.getElementById("tab-home").classList.contains("active")){
+        renderHome();
+      }
+    }catch(e){console.error("load error:",e);}
   };
   const s=document.createElement('script');s.id='js_ld';
   s.src=SU+'?action=getAll&callback='+id;
@@ -630,9 +638,10 @@ function showDayPopup(ds){
 
 function initApp(){
   if(!localStorage.getItem("rpv"))sD(defD());
-  refreshSel();load();
+  refreshSel();
   const sv=sessionStorage.getItem("rca");
   if(sv){CA=JSON.parse(sv);showApp();}
+  load(); // load after showApp so renderHome refreshes when data arrives
 }
 function doLogin(){
   const d=gD();const id=parseInt(document.getElementById("login-name").value);
@@ -1009,7 +1018,7 @@ function toggleMyCal(){
   if(open)renderMiniCal();
 }
 
-function buildCalHTML(agents, year, month, d, targetDays){
+function buildCalHTML(agents, year, month, d){
   const todayStr=fd(new Date());
   const daysInMonth=new Date(year,month+1,0).getDate();
   const firstDow=new Date(year,month,1).getDay();
@@ -1028,7 +1037,6 @@ function buildCalHTML(agents, year, month, d, targetDays){
     const isToday=ds===todayStr;const isPast=ds<todayStr;
     const dow=dt.getDay();const isWk=dow===0||dow===6;
     const agentStatuses=agents.map(a=>({a,s:status(a,dt)}));
-    window._teamCalDays=window._teamCalDays||{};
     window._teamCalDays[ds]=agentStatuses.map(({a,s:s2})=>({
       nombre:a.nombre,colorIdx:a.colorIdx,status:s2,label:calLabel(agents,a),
       indisp:d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
@@ -1073,7 +1081,7 @@ function renderHomeCal(){
   document.getElementById("home-cal-airport").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
   const agents=d.agents.filter(a=>a.aeropuerto===CA.aeropuerto);
   window._teamCalDays={};
-  document.getElementById("home-cal-content").innerHTML=buildCalHTML(agents,homeCalYear,homeCalMonth,d,window._teamCalDays);
+  document.getElementById("home-cal-content").innerHTML=buildCalHTML(agents,homeCalYear,homeCalMonth,d);
 }
 
 function renderTeamCal(){
