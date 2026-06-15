@@ -237,7 +237,7 @@ let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[
 const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
 
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
-function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));if(SHEETS_CONFIG.enabled&&SHEETS_CONFIG.scriptUrl)syncToSheets(d);}
+function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
 function getDefaultData(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[0,6]},
   {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[0,6]},
@@ -246,62 +246,38 @@ function getDefaultData(){return{agents:[
   {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[0,6]}
 ],indisponibilidades:[],nextId:6};}
 
-async function syncToSheets(data){
+function syncToSheets(data){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
-  return new Promise((resolve)=>{
-    const id='rpv_save_'+Date.now();
-    window[id]=function(result){
-      try{
-        if(result&&result.ok){
-          document.getElementById("sync-dot").className="sync-dot";
-          document.getElementById("sync-text").textContent="Sincronizado";
-        }
-      }catch(e){}
-      const s=document.getElementById('jsonp_save_s');if(s)s.remove();
-      delete window[id];resolve();
-    };
-    const s=document.createElement('script');
-    s.id='jsonp_save_s';
-    s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
-    s.onerror=function(){
-      try{
-        document.getElementById("sync-dot").className="sync-dot offline";
-        document.getElementById("sync-text").textContent="Error sync";
-      }catch(e){}
-      const se=document.getElementById('jsonp_save_s');if(se)se.remove();
-      delete window[id];resolve();
-    };
-    document.head.appendChild(s);
-  });
-}
-async function loadFromSheets(){
-  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
-  return new Promise((resolve)=>{
-    const id='rpv_'+Date.now();
-    window[id]=function(data){
-      try{
-        if(data&&data.agents&&data.agents.length>0){
-          localStorage.setItem("rpv_data",JSON.stringify(data));
-          document.getElementById("sync-dot").className="sync-dot";
-          document.getElementById("sync-text").textContent="Sincronizado";
-        }
-      }catch(e){}
-      const s=document.getElementById('jsonp_s');if(s)s.remove();
-      delete window[id];resolve();
-    };
-    const s=document.createElement('script');
-    s.id='jsonp_s';
-    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
-    s.onerror=function(){
-      document.getElementById("sync-dot").className="sync-dot offline";
-      document.getElementById("sync-text").textContent="Sin conexión";
-      const se=document.getElementById('jsonp_s');if(se)se.remove();
-      delete window[id];resolve();
-    };
-    document.head.appendChild(s);
-  });
+  const id='rpv_save_'+Date.now();
+  window[id]=function(r){delete window[id];const s=document.getElementById('jsonp_save');if(s)s.remove();
+    try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}
+  };
+  const s=document.createElement('script');s.id='jsonp_save';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
+  s.onerror=function(){delete window[id];s.remove();
+    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Error sync";}catch(e){}
+  };
+  document.head.appendChild(s);
 }
 
+function loadFromSheets(){
+  if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
+  const id='rpv_load_'+Date.now();
+  window[id]=function(data){
+    delete window[id];const s=document.getElementById('jsonp_load');if(s)s.remove();
+    if(data&&data.agents&&data.agents.length>0){
+      localStorage.setItem("rpv_data",JSON.stringify(data));
+      try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}
+      renderDashboard();
+    }
+  };
+  const s=document.createElement('script');s.id='jsonp_load';
+  s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
+  s.onerror=function(){delete window[id];s.remove();
+    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Sin conexión";}catch(e){}
+  };
+  document.head.appendChild(s);
+}
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
 function fmtDate(d){return d.toISOString().slice(0,10);}
@@ -521,14 +497,11 @@ function openModalEdit(id){
   document.getElementById("f-pass").value=a.pass||"";
   renderLibreDays();openModal("modal-agent");}
 function renderLibreDays(){document.querySelectorAll("#libre-days-row .week-day-chip").forEach(chip=>{chip.classList.toggle("libre-sel",libreSelDays.includes(parseInt(chip.dataset.d)));});}
-document.getElementById("libre-days-row").addEventListener("click",e=>{const chip=e.target.closest(".week-day-chip");if(!chip)return;const d=parseInt(chip.dataset.d);if(libreSelDays.includes(d))libreSelDays=libreSelDays.filter(x=>x!==d);else libreSelDays.push(d);renderLibreDays();});
+document.getElementById("libre-days-row").addEventListener("click",e=>{const chip=e.target.closest(".week-day-chip");if(!chip)return;const dv=parseInt(chip.dataset.d);if(libreSelDays.includes(dv))libreSelDays=libreSelDays.filter(x=>x!==dv);else libreSelDays.push(dv);renderLibreDays();});
 function saveAgent(){
-  const data=getData();
-  const id=document.getElementById("edit-id").value;
-  const nombre=document.getElementById("f-nombre").value.trim();
-  const pass=document.getElementById("f-pass").value.trim();
-  if(!nombre){alert("El nombre es obligatorio");return;}
-  if(!pass){alert("La contraseña es obligatoria");return;}
+  const data=getData();const id=document.getElementById("edit-id").value;
+  const nombre=document.getElementById("f-nombre").value.trim();const pass=document.getElementById("f-pass").value.trim();
+  if(!nombre){alert("El nombre es obligatorio");return;}if(!pass){alert("La contraseña es obligatoria");return;}
   if(id){const a=data.agents.find(x=>x.id===parseInt(id));if(a){a.nombre=nombre;a.aeropuerto=document.getElementById("f-aeropuerto").value;a.tel=document.getElementById("f-tel").value.trim();a.email=document.getElementById("f-email").value.trim();a.pass=pass;a.libresSemana=[...libreSelDays];}}
   else{data.agents.push({id:data.nextId++,nombre,aeropuerto:document.getElementById("f-aeropuerto").value,tel:document.getElementById("f-tel").value.trim(),email:document.getElementById("f-email").value.trim(),pass,colorIdx:data.agents.length%8,libresSemana:[...libreSelDays]});}
   saveData(data);closeModal("modal-agent");
@@ -540,14 +513,9 @@ function confirmDelete(){const d=getData();d.agents=d.agents.filter(a=>a.id!==de
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open");}));
-// Always ensure default data exists
 if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
 renderDashboard();
-// Try to load from Sheets and refresh
-(async function(){
-  await loadFromSheets();
-  renderDashboard();
-})();
-</script>
+loadFromSheets();
+</script></script>
 </body>
 </html>
