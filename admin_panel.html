@@ -299,15 +299,40 @@ textarea{resize:vertical;min-height:70px}
             </select>
           </div>
         </div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3)"></div> · Disponible</div>
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.5)"></div> <b>L</b> Libre fijo</div>
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.12);border:1px dashed rgba(245,166,35,0.5)"></div> <b>L</b> Libre puntual</div>
-          <div class="legend-item"><div style="display:flex;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);margin-top:2px"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--red);margin-top:2px"></span></div> Parcial</div>
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.22);border:1px solid rgba(229,83,75,0.5)"></div> <b>✕</b> No disponible</div>
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.1);border:1px dashed rgba(229,83,75,0.4)"></div> <b>✕</b> No disp. fija</div>
-          <div class="legend-item"><div class="legend-dot" style="background:rgba(217,72,84,0.25);border:1px solid var(--brand);position:relative"><div style="position:absolute;top:-1px;right:-1px;width:4px;height:4px;border-radius:50%;background:var(--brand)"></div></div> Conflicto</div>
-          <div class="legend-item" style="color:var(--text3)"><i class="ti ti-hand-finger" style="font-size:12px"></i> Pasa el ratón</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(62,207,142,0.18);border:1px solid rgba(62,207,142,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--green)">✓</div>
+            Disponible
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(245,166,35,0.22);border:1px solid rgba(245,166,35,0.6);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--amber)">L</div>
+            Libre fijo
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(34,211,238,0.15);border:1px dashed rgba(34,211,238,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--blue-light)">L</div>
+            Libre puntual
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:transparent;border:1px solid rgba(74,127,255,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+              <div style="display:flex;gap:3px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green)"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--red)"></span></div>
+            </div>
+            Parcial
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(229,83,75,0.22);border:1px solid rgba(229,83,75,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--red)">✕</div>
+            No disponible
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(229,83,75,0.1);border:1px dashed rgba(229,83,75,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--red)">✕</div>
+            No disp. fija
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+            <div style="width:37px;height:33px;background:rgba(217,72,84,0.25);border:1px solid var(--brand);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--green);position:relative">✓<div style="position:absolute;top:1px;right:1px;width:7px;height:7px;border-radius:50%;background:var(--brand)"></div></div>
+            Conflicto
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)">
+            <i class="ti ti-hand-finger"></i> Pasa el ratón para detalles
+          </div>
         </div>
         <div id="cal-container"></div>
       </div>
@@ -927,8 +952,8 @@ function renderCalendar(){
           bg="rgba(245,166,35,0.22)";color="var(--amber)";txt="L";
           border="1px solid rgba(245,166,35,0.6)";
         } else if(s==="libre-puntual"){
-          bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";
-          border="1px dashed rgba(245,166,35,0.5)";
+          bg="rgba(34,211,238,0.15)";color="var(--blue-light)";txt="L";
+          border="1px dashed rgba(34,211,238,0.5)";
         } else if(s==="parcial"){
           bg="transparent";color="var(--text)";txt="●";
           border="none";
