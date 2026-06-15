@@ -833,6 +833,19 @@ function saveIndisp(){
   sD(d);closeModal("modal-indisp");renderIndisp();renderMiniCal();
 }
 
+
+function calLabel(allAgents, agent) {
+  // Use first name initial; if duplicate add surname initial
+  const firstName = agent.nombre.split(" ")[0];
+  const initial = firstName[0].toUpperCase();
+  const hasDuplicate = allAgents.filter(a => a.id !== agent.id && a.nombre.split(" ")[0][0].toUpperCase() === initial).length > 0;
+  if (hasDuplicate) {
+    const parts = agent.nombre.split(" ");
+    const surname = parts.length > 1 ? parts[1][0].toUpperCase() : "";
+    return initial + surname;
+  }
+  return initial;
+}
 // ── CALENDARIO COMPARTIDO ────────────────────────────────────────────────────
 let teamCalYear, teamCalMonth;
 (function(){const n=new Date();teamCalYear=n.getFullYear();teamCalMonth=n.getMonth();})();
@@ -891,7 +904,7 @@ function renderTeamCal(){
     // Build dots or names
     let cellContent='';
     agentStatuses.forEach(({a,s:s2})=>{
-      const ini=getInitials(a.nombre);
+      const ini=calLabel(agents,a);
       if(s2==="disponible"){
         cellContent+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px">
           <span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
