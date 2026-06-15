@@ -1366,18 +1366,7 @@ document.addEventListener("mousemove", function(e) {
 });
 
 
-const ADMIN_PASS = "9876";
 
-// checkAdminPass removed - using doAdminLogin
-
-(function(){
-  if(sessionStorage.getItem("admin_auth")==="1"){
-    document.getElementById("login-screen").classList.add("hidden");
-    document.getElementById("app").classList.add("visible");
-  } else {
-    setTimeout(()=>{const el=document.getElementById("login-pass");if(el)el.focus();},100);
-  }
-})();
 
 function getLog(){return JSON.parse(localStorage.getItem("rpv_log")||"[]");}
 function addLog(type,agentId,agentName,action,detail){
