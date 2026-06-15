@@ -172,6 +172,22 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .sdot{width:6px;height:6px;border-radius:50%;display:inline-block}
 .info-box{border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;font-size:12px;display:flex;gap:8px;align-items:flex-start;background:rgba(74,127,255,.1);border:1px solid rgba(74,127,255,.25);color:#7aaeff}
 .modal-overlay.open .modal{animation:su .2s ease}
+
+/* TOUR */
+.tour-overlay{position:fixed;inset:0;z-index:500;pointer-events:none}
+.tour-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:500;pointer-events:all}
+.tour-highlight{position:fixed;z-index:501;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.65);pointer-events:none;transition:all .3s ease}
+.tour-bubble{position:fixed;z-index:502;background:var(--bg2);border:1px solid var(--brand);border-radius:14px;padding:16px 18px;max-width:280px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.tour-bubble::before{content:"";position:absolute;width:12px;height:12px;background:var(--bg2);border:1px solid var(--brand);transform:rotate(45deg)}
+.tour-step-count{font-size:10px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.tour-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.tour-text{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px}
+.tour-actions{display:flex;gap:8px;align-items:center}
+.tour-btn-skip{background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;padding:0}
+.tour-btn-next{background:var(--brand);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto}
+.tour-dots{display:flex;gap:5px;align-items:center}
+.tour-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:background .2s}
+.tour-dot.active{background:var(--brand);width:18px;border-radius:3px}
 @keyframes su{from{transform:translateY(50px);opacity:.4}to{transform:none;opacity:1}}
 </style>
 </head>
@@ -200,6 +216,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
       <div><div class="app-header-name" id="hdr-name"></div>
         <div style="font-size:11px;color:var(--text3)" id="hdr-airport"></div></div>
       <div class="app-header-avatar" id="hdr-avatar"></div>
+      <button class="logout-btn" onclick="startTour()" title="Ayuda" style="display:flex;align-items:center;justify-content:center;color:var(--blue-light)"><i class="ti ti-help" style="font-size:18px"></i></button>
       <button class="logout-btn" onclick="doLogout()" title="Cerrar sesión" style="display:flex;align-items:center;justify-content:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
   </div>
@@ -251,9 +268,9 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
     <!-- NO DISPONIBLE -->
     <div id="tab-indisp" class="tab-page">
-      <div class="sec-title">Mis indisponibilidades</div>
+      <div class="sec-title">Mis horarios parciales</div>
       <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0;margin-top:1px"></i>
-        <span>Registra cuando no puedas trabajar. Tus compañeros y el coordinador lo verán.</span></div>
+        <span>Registra los días que estás disponible <strong>solo hasta cierta hora</strong> o <strong>a partir de cierta hora</strong>. Para días completos libres usa <strong>Mis libres</strong>.</span></div>
       <div id="my-indisp-list"></div>
       <button class="btn-outline" style="width:100%;margin-top:6px" onclick="openAddIndisp()"><i class="ti ti-plus"></i> Añadir</button>
     </div>
@@ -285,7 +302,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
           <i class="ti ti-calendar-event" style="color:var(--green)"></i>
           <div>
             <div class="section-block-title">Días libres por semanas</div>
-            <div class="section-block-sub">Marca los días libres acordados con el equipo · semana a semana</div>
+            <div class="section-block-sub">Marca los días libres acordados con el equipo · si no vas a estar disponible un día entero, márcalo aquí</div>
           </div>
         </div>
         <div class="section-block-body">
@@ -312,7 +329,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
   <div class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="showTab('home',0)"><i class="ti ti-home"></i>Inicio</button>
-    <button class="bottom-nav-btn" onclick="showTab('indisp',1)"><i class="ti ti-calendar-off"></i>No disponible</button>
+    <button class="bottom-nav-btn" onclick="showTab('indisp',1)"><i class="ti ti-clock-hour-4"></i>Horario</button>
     <button class="bottom-nav-btn" onclick="showTab('libres',2)"><i class="ti ti-sun"></i>Mis libres</button>
     <button class="bottom-nav-btn" onclick="showTab('equipo',3)"><i class="ti ti-users"></i>Equipo</button>
   </div>
@@ -322,14 +339,16 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 <div class="modal-overlay" id="modal-indisp">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Nueva indisponibilidad</div>
-    <div class="modal-sub">Indica cuándo no podrás estar disponible</div>
+    <div class="modal-title">Disponibilidad parcial</div>
+    <div class="modal-sub">Indica en qué horario estarás disponible parcialmente</div>
     <label style="display:block;margin-bottom:8px">Tipo</label>
+    <div style="font-size:12px;color:var(--text2);background:rgba(74,127,255,0.08);border:1px solid rgba(74,127,255,0.2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px">
+      <i class="ti ti-info-circle" style="font-size:13px;color:var(--blue-light)"></i>
+      Registra aquí cuando estés disponible <strong>solo parte del día</strong>. Para días libres completos usa <strong>Mis libres</strong>.
+    </div>
     <div class="tipo-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div class="tipo-btn sel" data-tipo="puntual" onclick="setTipo('puntual')"><i class="ti ti-calendar-event"></i>Día completo</div>
-      <div class="tipo-btn" data-tipo="parcial" onclick="setTipo('parcial')"><i class="ti ti-clock-hour-4"></i>Parcial<br><span style="font-size:9px;opacity:.7">con horario</span></div>
-      <div class="tipo-btn" data-tipo="rango" onclick="setTipo('rango')"><i class="ti ti-calendar-stats"></i>Rango fechas</div>
-      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Fija semanal</div>
+      <div class="tipo-btn sel" data-tipo="parcial" onclick="setTipo('parcial')"><i class="ti ti-clock-hour-4"></i>Con horario<br><span style="font-size:9px;opacity:.7">puntual</span></div>
+      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Con horario<br><span style="font-size:9px;opacity:.7">fija semanal</span></div>
     </div>
     <div id="f-puntual"><div class="form-group"><label>Fecha</label><input type="date" id="f-fecha"></div></div>
     <div id="f-parcial" style="display:none">
@@ -617,6 +636,158 @@ function showDayPopup(ds){
   openModal("modal-day-popup");
 }
 
+// ── TOUR GUIADO ───────────────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    target: "#tab-home .status-banner, #home-status-banner",
+    title: "Tu estado hoy",
+    text: "Aquí ves de un vistazo si estás disponible, libre o con alguna incidencia hoy.",
+    arrow: "bottom"
+  },
+  {
+    target: "#home-cal-content",
+    title: "Calendario del equipo",
+    text: "Muestra la disponibilidad de todos tus compañeros del aeropuerto. Toca cualquier día para ver el detalle de cada persona.",
+    arrow: "top"
+  },
+  {
+    target: "#home-initials-legend",
+    title: "Quién es quién",
+    text: "Aquí ves a qué persona corresponde cada inicial del calendario. El punto de color indica su estado hoy.",
+    arrow: "top"
+  },
+  {
+    target: ".bottom-nav-btn:nth-child(2)",
+    title: "No disponible",
+    text: "Registra aquí cuando estés disponible solo parte del día: tienes una cena a las 20h, una cita, un tramo que no puedes. Lo verán tus compañeros y el coordinador.",
+    arrow: "bottom"
+  },
+  {
+    target: ".bottom-nav-btn:nth-child(3)",
+    title: "Mis libres",
+    text: "Marca tus días libres fijos (los que se repiten siempre) y los días libres acordados semana a semana con el equipo.",
+    arrow: "bottom"
+  },
+  {
+    target: ".bottom-nav-btn:nth-child(4)",
+    title: "Equipo",
+    text: "Ve el estado de todos los compañeros hoy y sus días libres fijos acordados.",
+    arrow: "bottom"
+  },
+  {
+    target: ".logout-btn:first-of-type",
+    title: "¡Listo!",
+    text: "Ya conoces la app. Puedes volver a ver este tour tocando el botón ❓ en la cabecera cuando quieras.",
+    arrow: "top",
+    last: true
+  }
+];
+
+let tourStep = 0;
+
+function startTour(){
+  // First make sure we're on the home tab
+  showTab("home", 0);
+  tourStep = 0;
+  document.getElementById("tour-backdrop").style.display = "block";
+  showTourStep();
+}
+
+function showTourStep(){
+  const steps = TOUR_STEPS;
+  if(tourStep >= steps.length){ endTour(); return; }
+  const step = steps[tourStep];
+
+  // Find target element
+  let target = null;
+  const selectors = step.target.split(", ");
+  for(const sel of selectors){
+    target = document.querySelector(sel);
+    if(target) break;
+  }
+
+  const bubble = document.getElementById("tour-bubble");
+  const highlight = document.getElementById("tour-highlight");
+
+  // Update content
+  document.getElementById("tour-count").textContent = `Paso ${tourStep+1} de ${steps.length}`;
+  document.getElementById("tour-title").textContent = step.title;
+  document.getElementById("tour-text").textContent = step.text;
+  document.getElementById("tour-btn-next").textContent = step.last ? "¡Entendido! ✓" : "Siguiente →";
+
+  // Dots
+  document.getElementById("tour-dots").innerHTML = steps.map((_,i) =>
+    `<div class="tour-dot ${i===tourStep?"active":""}"></div>`).join("");
+
+  // Position highlight
+  if(target){
+    const r = target.getBoundingClientRect();
+    const pad = 6;
+    highlight.style.display = "block";
+    highlight.style.top = (r.top - pad) + "px";
+    highlight.style.left = (r.left - pad) + "px";
+    highlight.style.width = (r.width + pad*2) + "px";
+    highlight.style.height = (r.height + pad*2) + "px";
+
+    // Position bubble
+    bubble.style.display = "block";
+    const bw = 280, bh = 160;
+    const W = window.innerWidth, H = window.innerHeight;
+
+    let bTop, bLeft;
+    if(step.arrow === "bottom" || r.top > H/2){
+      // Bubble above target
+      bTop = r.top - pad - bh - 16;
+      bubble.style.setProperty("--arrow-top", "auto");
+      bubble.querySelector && null;
+    } else {
+      // Bubble below target
+      bTop = r.bottom + pad + 16;
+    }
+    bLeft = Math.max(10, Math.min(r.left + r.width/2 - bw/2, W - bw - 10));
+    if(bTop < 10) bTop = r.bottom + pad + 16;
+    if(bTop + bh > H - 10) bTop = r.top - pad - bh - 16;
+
+    bubble.style.top = bTop + "px";
+    bubble.style.left = bLeft + "px";
+    bubble.style.maxWidth = (W - 20) + "px";
+  } else {
+    // No target — center on screen
+    highlight.style.display = "none";
+    bubble.style.display = "block";
+    bubble.style.top = "50%";
+    bubble.style.left = "50%";
+    bubble.style.transform = "translate(-50%,-50%)";
+  }
+}
+
+function tourNext(){
+  tourStep++;
+  if(tourStep >= TOUR_STEPS.length){ endTour(); return; }
+  // If navigating to a tab step, switch tab
+  const step = TOUR_STEPS[tourStep];
+  if(step.target.includes("bottom-nav-btn:nth-child(2)")) showTab("indisp",1);
+  else if(step.target.includes("bottom-nav-btn:nth-child(3)")) showTab("libres",2);
+  else if(step.target.includes("bottom-nav-btn:nth-child(4)")) showTab("equipo",3);
+  else if(tourStep <= 3) showTab("home",0);
+  setTimeout(showTourStep, 50);
+}
+
+function endTour(){
+  document.getElementById("tour-backdrop").style.display = "none";
+  document.getElementById("tour-highlight").style.display = "none";
+  document.getElementById("tour-bubble").style.display = "none";
+  showTab("home", 0);
+  localStorage.setItem("rpv_tour_done","1");
+}
+
+// Auto-start tour on first login ever
+function checkAutoTour(){
+  if(!localStorage.getItem("rpv_tour_done")){
+    setTimeout(startTour, 800);
+  }
+}
+
 function initApp(){
   if(!localStorage.getItem("rpv_data"))sD(defD());
   refreshSel();
@@ -646,6 +817,7 @@ function showApp(){
   document.getElementById("hdr-name").textContent=CA.nombre.split(" ")[0];
   document.getElementById("hdr-airport").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
   renderHome();
+  checkAutoTour();
 }
 function showTab(name,idx){
   document.querySelectorAll(".tab-page").forEach(el=>el.classList.remove("active"));
@@ -862,11 +1034,12 @@ function renderIndisp(){
   const d=gD();const indisps=d.indisponibilidades.filter(i=>i.agentId===CA.id);
   if(!indisps.length){document.getElementById("my-indisp-list").innerHTML="<div class='empty-state'><i class='ti ti-calendar-check'></i>Sin indisponibilidades registradas.</div>";return;}
   document.getElementById("my-indisp-list").innerHTML=indisps.map(i=>{
-    let dates="",icon="ti-calendar-event",wc="";
-    if(i.tipo==="puntual")dates=fdes(i.desde);
-    else if(i.tipo==="parcial"){dates=fdes(i.desde);icon="ti-clock-hour-4";wc="parcial";}
-    else if(i.tipo==="rango"){dates=fdes(i.desde)+" → "+fdes(i.hasta);icon="ti-calendar-stats";}
+    let dates="",icon="ti-clock-hour-4",wc="parcial";
+    if(i.tipo==="parcial"){dates=fdes(i.desde);}
     else if(i.tipo==="fija"){dates=(i.dias||[]).map(x=>DS[x]).join(" · ");icon="ti-repeat";wc="fija";}
+    // legacy support
+    else if(i.tipo==="puntual"){dates=fdes(i.desde);icon="ti-calendar-x";wc="";}
+    else if(i.tipo==="rango"){dates=fdes(i.desde)+" → "+fdes(i.hasta);icon="ti-calendar-stats";wc="";}
     const tr=i.tramo||"";
     const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-card">
@@ -891,7 +1064,7 @@ function openAddIndisp(){
   document.getElementById("f-fecha").value=fd(new Date());
   document.getElementById("f-desde").value=fd(new Date());
   document.getElementById("f-hasta").value=fd(new Date());
-  setTodoDia(true);
+  setTipo("parcial");
   document.getElementById("f-motivo").value="";
   document.getElementById("f-desc").value="";
   document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
@@ -909,13 +1082,10 @@ function setTodoDia(v){
 function setTipo(t){
   iTipo=t;
   document.querySelectorAll(".tipo-btn[data-tipo]").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
-  document.getElementById("f-puntual").style.display=t==="puntual"?"block":"none";
+  document.getElementById("f-puntual").style.display="none"; // never shown in indisp
   document.getElementById("f-parcial").style.display=t==="parcial"?"block":"none";
-  document.getElementById("f-rango").style.display=t==="rango"?"block":"none";
+  document.getElementById("f-rango").style.display="none";   // never shown in indisp
   document.getElementById("f-fija").style.display=t==="fija"?"block":"none";
-  // Hide/show horario for puntual
-  if(t==="puntual"){setTodoDia(true);}
-  if(t==="parcial"){document.getElementById("horario-fields").style.display="none";}
 }
 
 function setParcialTipo(pt){
@@ -938,8 +1108,7 @@ function saveIndisp(){
     motivo:document.getElementById("f-motivo").value.trim(),
     tramo:tramo,
     descripcion:document.getElementById("f-desc").value.trim()};
-  if(iTipo==="puntual"){obj.desde=document.getElementById("f-fecha").value;if(!obj.desde){alert("Selecciona una fecha");return;}}
-  else if(iTipo==="parcial"){
+  if(iTipo==="parcial"){
     obj.desde=document.getElementById("f-parcial-fecha").value;
     if(!obj.desde){alert("Selecciona una fecha");return;}
     const pt=document.querySelector('input[name="parcial-tipo"]:checked');
@@ -959,7 +1128,6 @@ function saveIndisp(){
       obj.tramo="No disponible de "+hi+" a "+hf;
     }
   }
-  else if(iTipo==="rango"){obj.desde=document.getElementById("f-desde").value;obj.hasta=document.getElementById("f-hasta").value;if(!obj.desde||!obj.hasta){alert("Selecciona las fechas");return;}if(obj.desde>obj.hasta){alert("La fecha inicio debe ser anterior");return;}}
   else if(iTipo==="fija"){if(!fDays.length){alert("Selecciona al menos un día");return;}obj.dias=[...fDays];}
   d.indisponibilidades.push(obj);d.nextId++;
   sD(d);closeModal("modal-indisp");renderIndisp();renderMiniCal();
@@ -1207,5 +1375,20 @@ initApp();
     </div>
   </div>
 </div>
+
+<!-- TOUR GUIADO -->
+<div id="tour-backdrop" class="tour-backdrop" style="display:none" onclick="tourNext()"></div>
+<div id="tour-highlight" class="tour-highlight" style="display:none"></div>
+<div id="tour-bubble" class="tour-bubble" style="display:none">
+  <div class="tour-step-count" id="tour-count"></div>
+  <div class="tour-title" id="tour-title"></div>
+  <div class="tour-text" id="tour-text"></div>
+  <div class="tour-dots" id="tour-dots"></div>
+  <div class="tour-actions">
+    <button class="tour-btn-skip" onclick="endTour()">Saltar tour</button>
+    <button class="tour-btn-next" id="tour-btn-next" onclick="tourNext()">Siguiente →</button>
+  </div>
+</div>
+
 </body>
 </html>
