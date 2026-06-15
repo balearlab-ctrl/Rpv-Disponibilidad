@@ -556,72 +556,91 @@ function renderCalendar(){
   const af=(document.getElementById("cal-airport-filter")||{}).value||"";
   let agents=d.agents;if(af)agents=agents.filter(a=>a.aeropuerto===af);
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const today=fmtDate(new Date());const days=[];
+  const todayStr=fmtDate(new Date());const days=[];
   for(let i=1;i<=daysInMonth;i++){const dt=new Date(calYear,calMonth,i);days.push({n:i,dow:dt.getDay(),dt});}
+
+  // Store tooltip data globally keyed by unique id
+  window._calTips = {};
+
   let html=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;overflow-x:auto"><div style="min-width:${130+daysInMonth*39}px">
     <div style="display:flex;border-bottom:1px solid var(--border2);background:var(--bg3)">
       <div style="min-width:130px;padding:9px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase">Comercial</div>
-      ${days.map(dy=>`<div style="width:37px;text-align:center;padding:7px 2px;font-size:10px;font-weight:600;color:${dy.dow===0||dy.dow===6?"var(--amber)":"var(--text3)"};text-transform:uppercase">${DIAS_SEMANA[dy.dow]}<br>${dy.n}</div>`).join("")}
+      ${days.map(dy=>{
+        const isWk=dy.dow===0||dy.dow===6;
+        const isToday=fmtDate(dy.dt)===todayStr;
+        return`<div style="width:37px;text-align:center;padding:7px 2px;font-size:10px;font-weight:600;color:${isWk?"var(--amber)":isToday?"var(--brand)":"var(--text3)"};text-transform:uppercase;${isToday?"background:rgba(217,72,84,0.06)":""}">${DIAS_SEMANA[dy.dow]}<br><span style="font-size:12px;font-weight:700">${dy.n}</span></div>`;
+      }).join("")}
     </div>`;
+
   for(const a of agents){
     html+=`<div style="display:flex;align-items:center;border-bottom:1px solid var(--border)">
-      <div style="min-width:130px;padding:9px 14px;display:flex;align-items:center;gap:8px">
+      <div style="min-width:130px;padding:8px 14px;display:flex;align-items:center;gap:8px">
         <div style="width:26px;height:26px;border-radius:50%;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${getInitials(a.nombre)}</div>
         <span style="font-size:12px;font-weight:500">${a.nombre.split(" ")[0]}</span>
       </div>
       ${days.map(dy=>{
-        const s=getAgentStatus(a,dy.dt);const ds=fmtDate(dy.dt);
-        // Color scheme: each status has a distinct visual
-        let bg="transparent",color="var(--text3)",txt="·",border="none";
-        if(s==="libre"){
-          bg="rgba(245,166,35,0.2)";color="var(--amber)";txt="L";border="1px solid rgba(245,166,35,0.5)";
-        } else if(s==="libre-puntual"){
-          bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";border="1px dashed rgba(245,166,35,0.5)";
-        } else if(s==="no-disponible"){
-          bg="rgba(229,83,75,0.18)";color="var(--red)";txt="✕";border="1px solid rgba(229,83,75,0.4)";
-        } else if(s==="no-disp-fija"){
-          bg="rgba(229,83,75,0.1)";color="var(--red)";txt="✕";border="1px dashed rgba(229,83,75,0.4)";
-        }
-        const otrosLibres=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(
-          (x.libresSemana||[]).includes(dy.dow)||
-          (x.diasLibresPuntuales||[]).includes(ds)));
-        const conflict=(s==="libre"||s==="libre-puntual")&&otrosLibres.length>0;
-        if(conflict){bg="rgba(217,72,84,0.25)";}
+        const s=getAgentStatus(a,dy.dt);
+        const ds=fmtDate(dy.dt);
+        const isPast=ds<todayStr;
+        const isToday=ds===todayStr;
+
+        // Find indisponibilidad for this day
         const indisp=d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
-          if(i.tipo==="puntual")return ds===i.desde;
-          if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
-          if(i.tipo==="fija")return(i.dias||[]).includes(dy.dow);return false;});
-        const com=(a.libresComentarios||{})[ds];
-        const ts=(a.libresTimestamps||{})[ds];
-        // Build rich tooltip data
-        const tooltipId="tip_"+a.id+"_"+ds.replace(/-/g,"");
-        const out=ds<today?"opacity:.4;":"";const hoy=ds===today?"outline:2px solid var(--brand);outline-offset:-2px;":"";
+          if(i.tipo==="puntual") return ds===i.desde;
+          if(i.tipo==="rango")  return ds>=i.desde&&ds<=(i.hasta||i.desde);
+          if(i.tipo==="fija")   return (i.dias||[]).includes(dy.dow);
+          return false;
+        });
+
+        // Conflict check (same airport)
+        const otrosLibres=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(
+          (x.libresSemana||[]).includes(dy.dow)||(x.diasLibresPuntuales||[]).includes(ds)));
+        const conflict=(s==="libre"||s==="libre-puntual")&&otrosLibres.length>0;
+
+        // Colors per status
+        let bg="transparent",color="var(--text3)",txt="·",border="none",dot="";
+        if(s==="libre"){
+          bg="rgba(245,166,35,0.22)";color="var(--amber)";txt="L";
+          border="1px solid rgba(245,166,35,0.6)";
+        } else if(s==="libre-puntual"){
+          bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";
+          border="1px dashed rgba(245,166,35,0.5)";
+        } else if(s==="no-disponible"){
+          bg="rgba(229,83,75,0.22)";color="var(--red)";txt="✕";
+          border="1px solid rgba(229,83,75,0.5)";
+        } else if(s==="no-disp-fija"){
+          bg="rgba(229,83,75,0.12)";color="var(--red)";txt="✕";
+          border="1px dashed rgba(229,83,75,0.4)";
+        }
+        if(conflict){ bg="rgba(217,72,84,0.28)"; dot=`<div style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--brand)"></div>`; }
+
+        // Store tooltip data
+        const tipId="t"+a.id+"x"+ds.replace(/-/g,"");
+        window._calTips[tipId]={
+          s, ds, name:a.nombre,
+          conflict, conflictNames:otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", "),
+          indisp: indisp||null,
+          libCom:(a.libresComentarios||{})[ds]||"",
+          libTs:(a.libresTimestamps||{})[ds]||""
+        };
+
+        const opacity=isPast?"opacity:.35;":"";
+        const outline=isToday?"outline:2px solid var(--brand);outline-offset:-2px;":"";
+        const cursor=s==="disponible"?"":"cursor:pointer;";
+
         return`<div
-          style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;border:${border};${out}${hoy}cursor:${s==="disponible"?"default":"pointer"};position:relative"
-          onmouseenter="showCalTip(event,'${tooltipId}')"
-          onmouseleave="hideCalTip()">
-          ${txt}${conflict?`<div style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--brand)"></div>`:""}
-          <div id="${tooltipId}" class="cal-tooltip" style="display:none"
-            data-status="${s}"
-            data-name="${a.nombre}"
-            data-ds="${ds}"
-            data-conflict="${conflict}"
-            data-conflict-names="${conflict?otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", "):""}"
-            data-indisp-tipo="${indisp?indisp.tipo:""}"
-            data-indisp-motivo="${indisp?(indisp.motivo||"").replace(/"/g,"&quot;"):""}"
-            data-indisp-desc="${indisp?(indisp.descripcion||"").replace(/"/g,"&quot;"):""}"
-            data-indisp-tramo="${indisp?(indisp.tramo||""):""}"
-            data-indisp-desde="${indisp?(indisp.desde||""):""}"
-            data-indisp-hasta="${indisp?(indisp.hasta||""):""}"
-            data-indisp-dias="${indisp?(indisp.dias||[]).join(","):""}"
-            data-libre-com="${(com||"").replace(/"/g,"&quot;")}"
-            data-libre-ts="${ts||""}"
-          ></div>
+          data-tip="${tipId}"
+          onmouseenter="showCalTip(event,this.dataset.tip)"
+          onmouseleave="hideCalTip()"
+          style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;border:${border};${opacity}${outline}${cursor}position:relative">
+          ${txt}${dot}
         </div>`;
       }).join("")}
     </div>`;}
+
   html+="</div></div>";
   document.getElementById("cal-container").innerHTML=html;}
+
 
 function renderIndisponibilidades(){
   const d=getData();
@@ -866,11 +885,11 @@ renderDashboard();
 loadFromSheets();
 // ── CALENDAR TOOLTIP ─────────────────────────────────────────────────────────
 let calTipEl = null;
-function showCalTip(e, tooltipId) {
-  const dataEl = document.getElementById(tooltipId);
-  if (!dataEl) return;
-  const s = dataEl.dataset.status;
-  if (s === "disponible") return; // no tooltip for available
+function showCalTip(e, tipId) {
+  const tip = (window._calTips||{})[tipId];
+  if (!tip) return;
+  const s = tip.s;
+  if (s === "disponible") return;
 
   if (!calTipEl) {
     calTipEl = document.createElement("div");
@@ -879,25 +898,25 @@ function showCalTip(e, tooltipId) {
   }
 
   const MESES_TIP = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  const DS_TIP = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
   const DS_ES_TIP = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 
-  const ds = dataEl.dataset.ds;
+  const ds = tip.ds;
   const dt = new Date(ds + "T00:00:00");
   const dateStr = DS_ES_TIP[dt.getDay()] + " " + dt.getDate() + " " + MESES_TIP[dt.getMonth()];
 
-  const name = dataEl.dataset.name;
-  const conflict = dataEl.dataset.conflict === "true";
-  const conflictNames = dataEl.dataset.conflictNames;
-  const iTipo = dataEl.dataset.indispTipo;
-  const iMotivo = dataEl.dataset.indispMotivo;
-  const iDesc = dataEl.dataset.indispDesc;
-  const iTramo = dataEl.dataset.indispTramo;
-  const iDesde = dataEl.dataset.indispDesde;
-  const iHasta = dataEl.dataset.indispHasta;
-  const iDias = dataEl.dataset.indispDias;
-  const libCom = dataEl.dataset.libreCom;
-  const libTs = dataEl.dataset.libreTs;
+  const name = tip.name;
+  const conflict = tip.conflict;
+  const conflictNames = tip.conflictNames;
+  const indisp = tip.indisp;
+  const iTipo = indisp ? indisp.tipo : "";
+  const iMotivo = indisp ? (indisp.motivo||"") : "";
+  const iDesc = indisp ? (indisp.descripcion||"") : "";
+  const iTramo = indisp ? (indisp.tramo||"") : "";
+  const iDesde = indisp ? (indisp.desde||"") : "";
+  const iHasta = indisp ? (indisp.hasta||"") : "";
+  const iDias = indisp ? (indisp.dias||[]) : [];
+  const libCom = tip.libCom;
+  const libTs = tip.libTs;
 
   // Status config
   const statusConfig = {
@@ -940,8 +959,8 @@ function showCalTip(e, tooltipId) {
         <div class="cal-tip-val">Rango: <strong>${dsd.getDate()} ${MESES_TIP[dsd.getMonth()]} → ${dsd2.getDate()} ${MESES_TIP[dsd2.getMonth()]}</strong></div>
       </div>`;
     }
-    if (iTipo === "fija" && iDias) {
-      const dias = iDias.split(",").map(d=>DS_ES_TIP[parseInt(d)]).join(", ");
+    if (iTipo === "fija" && iDias && iDias.length>0) {
+      const dias = iDias.map(d=>DS_ES_TIP[parseInt(d)]).join(", ");
       html += `<div class="cal-tip-row">
         <i class="ti ti-repeat cal-tip-icon" style="color:var(--purple)"></i>
         <div class="cal-tip-val">Cada: <strong>${dias}</strong></div>
