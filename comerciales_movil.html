@@ -543,10 +543,43 @@ function toggleLibrePuntual(ds,blocked){
   if(blocked)return;
   const d=gD();const a=d.agents.find(x=>x.id===CA.id);if(!a)return;
   if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];
-  if(a.diasLibresPuntuales.includes(ds))a.diasLibresPuntuales=a.diasLibresPuntuales.filter(x=>x!==ds);
-  else a.diasLibresPuntuales.push(ds);
-  localStorage.setItem("rpv",JSON.stringify(d));
-  renderSemanas(a);
+
+  // Already marked → unmark without warning
+  if(a.diasLibresPuntuales.includes(ds)){
+    a.diasLibresPuntuales=a.diasLibresPuntuales.filter(x=>x!==ds);
+    localStorage.setItem("rpv",JSON.stringify(d));
+    renderSemanas(a);return;
+  }
+
+  // Check who else has this day free (same airport only)
+  const dt0=new Date(ds+"T00:00:00");
+  const otros=d.agents.filter(x=>x.id!==CA.id&&x.aeropuerto===CA.aeropuerto&&(
+    (x.diasLibresPuntuales||[]).includes(ds)||
+    (x.libresSemana||[]).includes(dt0.getDay())
+  ));
+
+  if(otros.length>0){
+    const nombres=otros.map(x=>x.nombre.split(" ")[0]).join(" y ");
+    showConflictModal(ds,nombres,()=>{
+      a.diasLibresPuntuales.push(ds);
+      localStorage.setItem("rpv",JSON.stringify(d));
+      renderSemanas(a);
+    });
+  } else {
+    a.diasLibresPuntuales.push(ds);
+    localStorage.setItem("rpv",JSON.stringify(d));
+    renderSemanas(a);
+  }
+}
+
+function showConflictModal(ds,nombres,onConfirm){
+  const MC=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const dt=new Date(ds+"T00:00:00");
+  const DSN=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  document.getElementById("conflict-day").textContent=DSN[dt.getDay()]+" "+dt.getDate()+" "+MC[dt.getMonth()];
+  document.getElementById("conflict-names").textContent=nombres;
+  document.getElementById("conflict-confirm-btn").onclick=function(){closeModal("modal-conflict");onConfirm();};
+  openModal("modal-conflict");
 }
 function guardarLibresPuntuales(){
   const d=gD();sD(d);CA=d.agents.find(a=>a.id===CA.id)||CA;
@@ -663,5 +696,34 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open");}));
 initApp();
 </script>
+
+<!-- MODAL CONFLICTO -->
+<div class="modal-overlay" id="modal-conflict">
+  <div class="modal" style="padding:24px 20px env(safe-area-inset-bottom,16px)">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--amber-bg);border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="ti ti-alert-triangle" style="font-size:24px;color:var(--amber)"></i>
+      </div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">¡Día ya ocupado!</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5">
+        <strong id="conflict-names" style="color:var(--amber)"></strong>
+        ya tiene libre en tu aeropuerto:<br>
+        <span id="conflict-day" style="font-weight:600;color:var(--text)"></span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:10px;background:var(--bg3);border-radius:var(--radius-sm);padding:8px 12px">
+        El coordinador verá quién lo pidió primero. ¿Quieres apuntarte igualmente?
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-outline" style="flex:1;justify-content:center" onclick="closeModal('modal-conflict')">
+        <i class="ti ti-x"></i> Cancelar
+      </button>
+      <button id="conflict-confirm-btn" class="btn-full btn-primary" style="flex:1;font-size:14px">
+        <i class="ti ti-check"></i> Apuntarme igual
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
