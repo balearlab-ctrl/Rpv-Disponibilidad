@@ -530,7 +530,7 @@ function renderSemanas(a){
       else if(isFijo)cls+=" libre"; // fijo ya marcado, no se puede desmarcar desde aquí
       else if(isLibre)cls+=" libre";
       const disabled=isPast||isFijo?"":"";
-      html+=`<button class="${cls}" onclick="toggleLibrePuntual('${ds}',${isFijo||isPast})">
+      html+=`<button class="${cls}" onclick="toggleLibrePuntual('${ds}',${isFijo||isPast})" title="${((a.libresComentarios||{})[ds])||((a.libresTimestamps||{})[ds]?'Pedido: '+new Date((a.libresTimestamps||{})[ds]).toLocaleDateString('es-ES'):'')}">
         ${DS[dt.getDay()]}<span>${dt.getDate()}</span></button>`;
     });
     html+="</div></div>";
@@ -561,15 +561,47 @@ function toggleLibrePuntual(ds,blocked){
   if(otros.length>0){
     const nombres=otros.map(x=>x.nombre.split(" ")[0]).join(" y ");
     showConflictModal(ds,nombres,()=>{
+      pendingLibreDs = ds;
+      pendingLibreCallback = ()=>{
+        if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];
+        a.diasLibresPuntuales.push(ds);
+        if(!a.libresTimestamps)a.libresTimestamps={};
+        a.libresTimestamps[ds]=new Date().toISOString();
+        if(!a.libresComentarios)a.libresComentarios={};
+        const com=document.getElementById("libre-comment-input");
+        if(com)a.libresComentarios[ds]=com.value.trim();
+        localStorage.setItem("rpv",JSON.stringify(d));
+        renderSemanas(a);
+      };
+      openModal("modal-conflict");
+    });
+  } else {
+    openModalLibreComment(ds, ()=>{
+      if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];
       a.diasLibresPuntuales.push(ds);
+      if(!a.libresTimestamps)a.libresTimestamps={};
+      a.libresTimestamps[ds]=new Date().toISOString();
+      const com=document.getElementById("libre-comment-input");
+      if(com&&com.value.trim()){
+        if(!a.libresComentarios)a.libresComentarios={};
+        a.libresComentarios[ds]=com.value.trim();
+      }
       localStorage.setItem("rpv",JSON.stringify(d));
       renderSemanas(a);
     });
-  } else {
-    a.diasLibresPuntuales.push(ds);
-    localStorage.setItem("rpv",JSON.stringify(d));
-    renderSemanas(a);
   }
+}
+
+let pendingLibreDs=null, pendingLibreCallback=null;
+
+function openModalLibreComment(ds, cb){
+  const MC=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const dt=new Date(ds+"T00:00:00");
+  const DSN=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  document.getElementById("libre-comment-day").textContent=DSN[dt.getDay()]+" "+dt.getDate()+" "+MC[dt.getMonth()];
+  document.getElementById("libre-comment-input").value="";
+  document.getElementById("libre-comment-confirm").onclick=function(){closeModal("modal-libre-comment");cb();};
+  openModal("modal-libre-comment");
 }
 
 function showConflictModal(ds,nombres,onConfirm){
@@ -578,7 +610,11 @@ function showConflictModal(ds,nombres,onConfirm){
   const DSN=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
   document.getElementById("conflict-day").textContent=DSN[dt.getDay()]+" "+dt.getDate()+" "+MC[dt.getMonth()];
   document.getElementById("conflict-names").textContent=nombres;
-  document.getElementById("conflict-confirm-btn").onclick=function(){closeModal("modal-conflict");onConfirm();};
+  document.getElementById("conflict-confirm-btn").onclick=function(){
+    closeModal("modal-conflict");
+    // also open comment modal before confirming
+    openModalLibreComment(ds, onConfirm);
+  };
   openModal("modal-conflict");
 }
 function guardarLibresPuntuales(){
@@ -696,6 +732,29 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open");}));
 initApp();
 </script>
+
+
+<!-- MODAL COMENTARIO LIBRE PUNTUAL -->
+<div class="modal-overlay" id="modal-libre-comment">
+  <div class="modal" style="padding:20px 18px env(safe-area-inset-bottom,16px)">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Día libre</div>
+    <div class="modal-sub">Añade un comentario opcional — lo verán el coordinador y tus compañeros</div>
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber)">
+      <i class="ti ti-sun" style="margin-right:6px"></i><span id="libre-comment-day"></span>
+    </div>
+    <div class="form-group">
+      <label>Comentario <span style="color:var(--text3)">(opcional)</span></label>
+      <input type="text" id="libre-comment-input" placeholder="Ej: Día acordado con el equipo, turno cambiado...">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn-outline" style="flex:1;justify-content:center" onclick="closeModal('modal-libre-comment')">Cancelar</button>
+      <button id="libre-comment-confirm" class="btn-full btn-primary" style="flex:2;font-size:14px">
+        <i class="ti ti-check"></i> Confirmar día libre
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CONFLICTO -->
 <div class="modal-overlay" id="modal-conflict">

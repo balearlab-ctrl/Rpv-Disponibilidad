@@ -139,6 +139,10 @@ textarea{resize:vertical;min-height:70px}
     <button class="nav-tab" onclick="showPage('comerciales')"><i class="ti ti-users"></i> Comerciales</button>
     <button class="nav-tab" onclick="showPage('calendario')"><i class="ti ti-calendar-month"></i> Calendario</button>
     <button class="nav-tab" onclick="showPage('indisponibilidades')"><i class="ti ti-calendar-off"></i> Indisponibilidades</button>
+    <button class="nav-tab" onclick="showPage('semanal')"><i class="ti ti-layout-columns"></i> Vista semanal</button>
+    <button class="nav-tab" onclick="showPage('exportar')"><i class="ti ti-download"></i> Exportar</button>
+    <button class="nav-tab" onclick="showPage('semanal')"><i class="ti ti-layout-columns"></i> Vista semanal</button>
+    <button class="nav-tab" onclick="showPage('exportar')"><i class="ti ti-download"></i> Exportar</button>
   </div>
   <div class="header-right">
     <div id="sync-indicator" class="sync-status"><div class="sync-dot offline" id="sync-dot"></div><span id="sync-text">Solo local</span></div>
@@ -190,6 +194,46 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div id="cal-container"></div>
   </div>
+  <!-- VISTA SEMANAL -->
+  <div id="page-semanal" class="page">
+    <div class="section-header">
+      <span class="section-title">Vista semanal del equipo</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-outline" onclick="semPrev()"><i class="ti ti-chevron-left"></i></button>
+        <span id="sem-label" style="font-size:14px;font-weight:600;min-width:260px;text-align:center"></span>
+        <button class="btn btn-outline" onclick="semNext()"><i class="ti ti-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="semanal-content"></div>
+  </div>
+
+  <!-- EXPORTAR -->
+  <div id="page-exportar" class="page">
+    <div class="section-header"><span class="section-title">Exportar planning</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+        <div style="font-size:22px;margin-bottom:8px"><i class="ti ti-file-spreadsheet" style="color:var(--green)"></i></div>
+        <div style="font-weight:600;margin-bottom:4px">Excel / CSV</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Exporta el planning del mes en formato CSV.</div>
+        <div class="form-group"><label>Mes</label>
+          <select id="exp-month">
+            <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+          </select></div>
+        <button class="btn btn-primary" style="width:100%" onclick="exportCSV()"><i class="ti ti-download"></i> Descargar CSV</button>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+        <div style="font-size:22px;margin-bottom:8px"><i class="ti ti-printer" style="color:var(--brand)"></i></div>
+        <div style="font-weight:600;margin-bottom:4px">Imprimir / PDF</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Genera la vista del mes para imprimir o PDF.</div>
+        <div class="form-group"><label>Aeropuerto</label>
+          <select id="exp-airport">
+            <option value="">Todos</option><option value="MAD">Madrid (MAD)</option><option value="BCN">Barcelona (BCN)</option>
+          </select></div>
+        <button class="btn btn-primary" style="width:100%;background:var(--brand)" onclick="exportPrint()"><i class="ti ti-printer"></i> Imprimir / PDF</button>
+      </div>
+    </div>
+  </div>
+
   <div id="page-indisponibilidades" class="page">
     <div class="section-header"><span class="section-title">Todas las indisponibilidades</span></div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
@@ -234,32 +278,30 @@ const BG_COLORS=["rgba(217,72,84,0.18)","rgba(155,109,255,0.18)","rgba(62,207,14
 const DIAS_SEMANA=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const DIAS_ES=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[];
+const MESES_C=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+let calYear,calMonth,currentPage="dashboard",deleteIdPending=null,libreSelDays=[],semOffset=0;
 const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
 
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
 function saveData(d){localStorage.setItem("rpv_data",JSON.stringify(d));syncToSheets(d);}
 function getDefaultData(){return{agents:[
-  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[]},
-  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[]},
-  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[]},
-  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[]},
-  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[]}
+  {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",email:"raul@reclamacionporvuelo.es",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
+  {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",email:"andrei@reclamacionporvuelo.es",pass:"1234",colorIdx:1,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
+  {id:3,nombre:"Ruth Sánchez",aeropuerto:"MAD",tel:"+34 600 111 003",email:"ruth@reclamacionporvuelo.es",pass:"1234",colorIdx:2,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
+  {id:4,nombre:"Sergio López",aeropuerto:"BCN",tel:"+34 600 111 004",email:"sergio@reclamacionporvuelo.es",pass:"1234",colorIdx:3,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}},
+  {id:5,nombre:"Sara Jiménez",aeropuerto:"BCN",tel:"+34 600 111 005",email:"sara@reclamacionporvuelo.es",pass:"1234",colorIdx:4,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}}
 ],indisponibilidades:[],nextId:6};}
 
 function syncToSheets(data){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
   const id='rpv_save_'+Date.now();
   window[id]=function(r){delete window[id];const s=document.getElementById('jsonp_save');if(s)s.remove();
-    try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}
-  };
+    try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}};
   const s=document.createElement('script');s.id='jsonp_save';
   s.src=SHEETS_CONFIG.scriptUrl+'?action=saveAll&callback='+id+'&data='+encodeURIComponent(JSON.stringify(data));
   s.onerror=function(){delete window[id];s.remove();
-    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Error sync";}catch(e){}
-  };
-  document.head.appendChild(s);
-}
+    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Error sync";}catch(e){}};
+  document.head.appendChild(s);}
 
 function loadFromSheets(){
   if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;
@@ -267,22 +309,21 @@ function loadFromSheets(){
   window[id]=function(data){
     delete window[id];const s=document.getElementById('jsonp_load');if(s)s.remove();
     if(data&&data.agents&&data.agents.length>0){
+      data.agents.forEach(a=>{if(!a.diasLibresPuntuales)a.diasLibresPuntuales=[];if(!a.libresTimestamps)a.libresTimestamps={};if(!a.libresComentarios)a.libresComentarios={};});
       localStorage.setItem("rpv_data",JSON.stringify(data));
       try{document.getElementById("sync-dot").className="sync-dot";document.getElementById("sync-text").textContent="Sincronizado";}catch(e){}
-      renderDashboard();
-    }
-  };
+      renderDashboard();}};
   const s=document.createElement('script');s.id='jsonp_load';
   s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
   s.onerror=function(){delete window[id];s.remove();
-    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Sin conexión";}catch(e){}
-  };
-  document.head.appendChild(s);
-}
+    try{document.getElementById("sync-dot").className="sync-dot offline";document.getElementById("sync-text").textContent="Sin conexión";}catch(e){}};
+  document.head.appendChild(s);}
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
 function fmtDate(d){return d.toISOString().slice(0,10);}
 function fmtDateES(s){if(!s)return"";const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
+function fd2(dt){return dt.getDate()+" "+MESES_C[dt.getMonth()];}
+
 function getAgentStatus(agent,date){
   const d=getData();const ds=fmtDate(date);const dow=date.getDay();
   if((agent.libresSemana||[]).includes(dow))return"libre";
@@ -298,24 +339,26 @@ function showPage(p){
   document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
   document.querySelectorAll(".nav-tab").forEach(el=>el.classList.remove("active"));
   document.getElementById("page-"+p).classList.add("active");
-  const tabs=["dashboard","comerciales","calendario","indisponibilidades"];
+  const tabs=["dashboard","comerciales","calendario","indisponibilidades","semanal","exportar"];
   const idx=tabs.indexOf(p);if(idx>=0)document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   currentPage=p;
   if(p==="dashboard")renderDashboard();
   if(p==="comerciales")renderTable();
   if(p==="calendario")renderCalendar();
-  if(p==="indisponibilidades")renderIndisponibilidades();}
+  if(p==="indisponibilidades")renderIndisponibilidades();
+  if(p==="semanal")renderSemanal();
+  if(p==="exportar"){document.getElementById("exp-month").value=new Date().getMonth();}}
 
 function renderDashboard(){
   const d=getData();const today=new Date();
   const mad=d.agents.filter(a=>a.aeropuerto==="MAD");const bcn=d.agents.filter(a=>a.aeropuerto==="BCN");
   const disp=d.agents.filter(a=>getAgentStatus(a,today)==="disponible");
-  const libr=d.agents.filter(a=>getAgentStatus(a,today)==="libre");
+  const libr=d.agents.filter(a=>["libre","libre-puntual"].includes(getAgentStatus(a,today)));
   const noD=d.agents.filter(a=>["no-disponible","no-disp-fija"].includes(getAgentStatus(a,today)));
   document.getElementById("stats-grid").innerHTML=
     stat("Total comerciales",d.agents.length,mad.length+" MAD · "+bcn.length+" BCN")+
     stat("Disponibles hoy",disp.length,"Activos","var(--green)")+
-    stat("Libres hoy",libr.length,"Día libre acordado","var(--amber)")+
+    stat("Libres hoy",libr.length,"Día libre","var(--amber)")+
     stat("No disponibles",noD.length,"Hoy","var(--red)")+
     stat("Indisponibilidades",d.indisponibilidades.length,"Registradas total");
   document.getElementById("airports-grid").innerHTML=
@@ -328,8 +371,8 @@ function renderAirportSection(code,name,badgeCls,agents){
   const today=new Date();
   const cards=agents.map(a=>{
     const s=getAgentStatus(a,today);
-    const sl={disponible:"Disponible",libre:"Día libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
-    const dc=s==="disponible"?"disponible":s==="libre"?"libre":"no-disponible";
+    const sl={disponible:"Disponible",libre:"Libre fijo","libre-puntual":"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
+    const dc=s==="disponible"?"disponible":["libre","libre-puntual"].includes(s)?"libre":"no-disponible";
     return`<div class="agent-card" onclick="showDetalle(${a.id})">
       <div class="agent-avatar" style="background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]}">${getInitials(a.nombre)}</div>
       <div class="agent-info"><div class="agent-name">${a.nombre}</div><div class="agent-meta">${a.tel||"Sin tel"}</div></div>
@@ -340,7 +383,7 @@ function renderAirportSection(code,name,badgeCls,agents){
       </div></div>`;}).join("");
   return`<div class="airport-section">
     <div class="airport-header"><span class="airport-badge ${badgeCls}">${code}</span><span class="airport-name">${name}</span><span class="agent-count">${agents.length} comerciales</span></div>
-    <div class="agent-list">${cards||"<div class=\'empty-list\'>Sin comerciales</div>"}</div>
+    <div class="agent-list">${cards||"<div class='empty-list'>Sin comerciales</div>"}</div>
     <div class="add-agent-row"><button class="btn btn-outline" style="width:100%" onclick="openModalAdd('${code}')"><i class="ti ti-plus"></i> Añadir</button></div>
   </div>`;}
 
@@ -353,8 +396,8 @@ function renderTable(){
   if(airport)agents=agents.filter(a=>a.aeropuerto===airport);
   document.getElementById("agents-tbody").innerHTML=agents.map(a=>{
     const s=getAgentStatus(a,today);
-    const sl={disponible:"Disponible",libre:"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
-    const sc=s==="disponible"?"disponible":s==="libre"?"libre":"no-disponible";
+    const sl={disponible:"Disponible",libre:"Libre fijo","libre-puntual":"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
+    const sc=s==="disponible"?"disponible":["libre","libre-puntual"].includes(s)?"libre":"no-disponible";
     const libres=(a.libresSemana||[]).map(i=>DIAS_SEMANA[i]).join(", ")||"—";
     return`<tr>
       <td><div style="display:flex;align-items:center;gap:10px">
@@ -373,8 +416,8 @@ function renderTable(){
 function showDetalle(id){
   const d=getData();const a=d.agents.find(x=>x.id===id);if(!a)return;
   showPage("detalle");const today=new Date();const s=getAgentStatus(a,today);
-  const sl={disponible:"Disponible hoy",libre:"Día libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
-  const sc={disponible:"pill-disponible",libre:"pill-libre","no-disponible":"pill-no-disponible","no-disp-fija":"pill-no-disponible"}[s];
+  const sl={disponible:"Disponible hoy",libre:"Libre fijo","libre-puntual":"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
+  const sc={disponible:"pill-disponible",libre:"pill-libre","libre-puntual":"pill-libre","no-disponible":"pill-no-disponible","no-disp-fija":"pill-no-disponible"}[s];
   const indisps=d.indisponibilidades.filter(i=>i.agentId===id);
   const indispHTML=indisps.length?indisps.map(i=>{
     let desc="";
@@ -383,13 +426,35 @@ function showDetalle(id){
     else if(i.tipo==="fija")desc="Cada "+(i.dias||[]).map(x=>DIAS_ES[x]).join(", ")+(i.tramo?" · "+i.tramo:"");
     const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-item"><i class="ti ti-calendar-off indisp-icon"></i>
-      <div class="indisp-desc">
-        <div class="indisp-motivo">${i.motivo||"Sin descripción"}</div>
+      <div class="indisp-desc"><div class="indisp-motivo">${i.motivo||"Sin descripción"}</div>
         <div class="indisp-sub">${desc}</div>
-        ${i.descripcion?`<div class="indisp-sub" style="margin-top:4px;color:var(--text2);font-style:italic">"${i.descripcion}"</div>`:""}
-      </div>
-      <span class="pill" style="font-size:10px;${ps}">${i.tipo}</span>
-    </div>`}).join(""):"<p style='color:var(--text3);font-size:13px'>Sin indisponibilidades</p>";
+        ${i.descripcion?`<div class="indisp-sub" style="color:var(--text2);font-style:italic">"${i.descripcion}"</div>`:""}
+      </div><span class="pill" style="font-size:10px;${ps}">${i.tipo}</span></div>`}).join("")
+    :"<p style='color:var(--text3);font-size:13px'>Sin indisponibilidades</p>";
+
+  // Days libre fijos with conflict
+  const fijosHTML=DIAS_SEMANA.map((dn,i)=>{
+    const isLibre=(a.libresSemana||[]).includes(i);
+    const conflAgents=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(x.libresSemana||[]).includes(i));
+    const hasC=isLibre&&conflAgents.length>0;
+    const tip=hasC?` title="Conflicto con: ${conflAgents.map(x=>x.nombre.split(' ')[0]).join(', ')}"` :"";
+    return`<span${tip} style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;${isLibre?(hasC?"background:rgba(217,72,84,0.2);color:var(--brand-light);border:1px solid var(--brand)":"background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber)"):"background:var(--bg3);color:var(--text3);border:1px solid var(--border)"}">${dn}${hasC?" ⚠️":""}</span>`;
+  }).join("");
+
+  // Dias libres puntuales with timestamp + conflict
+  const puntualesHTML=(a.diasLibresPuntuales||[]).sort().map(ds=>{
+    const conflAgents=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&((x.diasLibresPuntuales||[]).includes(ds)||(x.libresSemana||[]).includes(new Date(ds+"T00:00:00").getDay())));
+    const hasC=conflAgents.length>0;
+    const ts=(a.libresTimestamps||{})[ds];
+    const com=(a.libresComentarios||{})[ds];
+    const tsStr=ts?new Date(ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+    const tip=hasC?`⚠️ Conflicto: ${conflAgents.map(x=>x.nombre.split(" ")[0]).join(", ")}`:com||"";
+    return`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${hasC?"rgba(217,72,84,0.1)":"rgba(245,166,35,0.1)"};border:1px solid ${hasC?"rgba(217,72,84,0.3)":"rgba(245,166,35,0.3)"};border-radius:var(--radius-sm);font-size:12px;" title="${tip}">
+      <span style="font-weight:600;color:${hasC?"var(--brand-light)":"var(--amber)"}">${fmtDateES(ds)}${hasC?" ⚠️":""}</span>
+      ${tsStr?`<span style="color:var(--text3)">· ${tsStr}</span>`:""}
+      ${com?`<span style="color:var(--text2);font-style:italic">"${com}"</span>`:""}
+    </div>`;}).join("")||"<p style='color:var(--text3);font-size:12px'>Sin días libres puntuales</p>";
+
   document.getElementById("detalle-content").innerHTML=`
     <div class="detail-panel">
       <div class="detail-header">
@@ -410,16 +475,9 @@ function showDetalle(id){
           <div class="detail-item"><span class="detail-item-label"><i class="ti ti-phone"></i> Teléfono</span><span class="detail-item-value">${a.tel||"—"}</span></div>
           <div class="detail-item"><span class="detail-item-label"><i class="ti ti-mail"></i> Email</span><span class="detail-item-value">${a.email||"—"}</span></div>
           <div class="detail-section-title" style="margin-top:20px">Días libres fijos</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-            ${DIAS_SEMANA.map((dn,i)=>{
-              const isLibre=(a.libresSemana||[]).includes(i);
-              const conflAgents=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(x.libresSemana||[]).includes(i));
-              const hasConflict=isLibre&&conflAgents.length>0;
-              const tip=hasConflict?` title="Conflicto con: ${conflAgents.map(x=>x.nombre.split(' ')[0]).join(', ')}"` :"";
-              return`<span${tip} style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;${isLibre?(hasConflict?"background:rgba(217,72,84,0.2);color:var(--brand-light);border:1px solid var(--brand)":"background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber)"):"background:var(--bg3);color:var(--text3);border:1px solid var(--border)"}">${dn}${hasConflict?" ⚠️":""}</span>`;
-            }).join("")}
-          </div>
-          ${(a.diasLibresPuntuales||[]).length>0?`<div class="detail-section-title" style="margin-top:14px">Días libres puntuales</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">${(a.diasLibresPuntuales||[]).sort().map(ds=>{const conflAgents=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&((x.diasLibresPuntuales||[]).includes(ds)||(x.libresSemana||[]).includes(new Date(ds+"T00:00:00").getDay())));const hasC=conflAgents.length>0;return`<span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;${hasC?"background:rgba(217,72,84,0.2);color:var(--brand-light);border:1px solid var(--brand)":"background:rgba(245,166,35,0.2);color:var(--amber);border:1px solid rgba(245,166,35,0.5)"}" title="${hasC?"⚠️ Conflicto con: "+conflAgents.map(x=>x.nombre.split(" ")[0]).join(", "):""}">${fmtDateES(ds)}${hasC?" ⚠️":""}</span>`;}).join("")}</div>`:""}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${fijosHTML}</div>
+          <div class="detail-section-title" style="margin-top:16px">Días libres puntuales</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px">${puntualesHTML}</div>
         </div>
         <div>
           <div class="detail-section-title">Indisponibilidades (${indisps.length})</div>
@@ -440,7 +498,7 @@ function renderCalendar(){
   for(let i=1;i<=daysInMonth;i++){const dt=new Date(calYear,calMonth,i);days.push({n:i,dow:dt.getDay(),dt});}
   let html=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;overflow-x:auto"><div style="min-width:${130+daysInMonth*39}px">
     <div style="display:flex;border-bottom:1px solid var(--border2);background:var(--bg3)">
-      <div style="min-width:130px;padding:9px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Comercial</div>
+      <div style="min-width:130px;padding:9px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase">Comercial</div>
       ${days.map(dy=>`<div style="width:37px;text-align:center;padding:7px 2px;font-size:10px;font-weight:600;color:${dy.dow===0||dy.dow===6?"var(--amber)":"var(--text3)"};text-transform:uppercase">${DIAS_SEMANA[dy.dow]}<br>${dy.n}</div>`).join("")}
     </div>`;
   for(const a of agents){
@@ -456,24 +514,25 @@ function renderCalendar(){
         else if(s==="libre-puntual"){bg="rgba(245,166,35,0.2)";color="var(--amber)";txt="L";}
         else if(s==="no-disponible"){bg="var(--red-bg)";color="var(--red)";txt="✕";}
         else if(s==="no-disp-fija"){bg="rgba(229,83,75,.22)";color="var(--red)";txt="✕";}
-        const out=ds<today?"opacity:.35;":"";const hoy=ds===today?"outline:2px solid var(--brand);outline-offset:-2px;":"";
+        const otrosLibres=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(
+          (x.libresSemana||[]).includes(dy.dow)||
+          (x.diasLibresPuntuales||[]).includes(ds)));
+        const conflict=(s==="libre"||s==="libre-puntual")&&otrosLibres.length>0;
+        if(conflict){bg="rgba(217,72,84,0.25)";}
         const indisp=d.indisponibilidades.filter(i=>i.agentId===a.id).find(i=>{
           if(i.tipo==="puntual")return ds===i.desde;
           if(i.tipo==="rango")return ds>=i.desde&&ds<=(i.hasta||i.desde);
           if(i.tipo==="fija")return(i.dias||[]).includes(dy.dow);return false;});
-        // Conflict detection: same airport only
-        const otrosLibres=d.agents.filter(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&(
-          (x.libresSemana||[]).includes(dy.dow)||
-          (x.diasLibresPuntuales||[]).includes(ds)
-        ));
-        const conflicto=( (s==="libre"||s==="libre-puntual") && otrosLibres.length>0 );
-        if(conflicto){bg="rgba(217,72,84,0.25)";color="var(--brand-light)";}
-        const conflictoTip=conflicto?` Conflicto: ${otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", ")} también libres`:"";
-        const indispTip=indisp&&(indisp.descripcion||indisp.motivo)?` ${indisp.motivo||""}`:""
-        const tipText=(conflictoTip||indispTip).trim();
-        const tip=tipText?` title="${tipText.replace(/"/g,"&quot;")}"`:"";
-        const conflictoBadge=conflicto?`<div style="position:absolute;top:1px;right:1px;width:6px;height:6px;border-radius:50%;background:var(--brand)"></div>`:"";
-        return`<div${tip} style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;${out}${hoy}cursor:default;position:relative">${txt}${conflictoBadge}</div>`;
+        const com=(a.libresComentarios||{})[ds];
+        const tipArr=[];
+        if(conflict)tipArr.push("⚠️ "+otrosLibres.map(x=>x.nombre.split(" ")[0]).join(", ")+" también libre");
+        if(com)tipArr.push(com);
+        if(indisp&&indisp.motivo)tipArr.push(indisp.motivo);
+        const tip=tipArr.length?` title="${tipArr.join(" · ").replace(/"/g,"&quot;")}"`:"";
+        const out=ds<today?"opacity:.35;":"";const hoy=ds===today?"outline:2px solid var(--brand);outline-offset:-2px;":"";
+        return`<div${tip} style="width:37px;height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${bg};color:${color};border-radius:4px;margin:2px 1px;${out}${hoy}cursor:default;position:relative">
+          ${txt}${conflict?`<div style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--brand)"></div>`:""}
+        </div>`;
       }).join("")}
     </div>`;}
   html+="</div></div>";
@@ -499,6 +558,189 @@ function renderIndisponibilidades(){
       <td style="color:var(--text2)">${i.motivo||"—"}${i.descripcion?`<br><span style="font-size:11px;color:var(--text3);font-style:italic">"${i.descripcion}"</span>`:""}</td>
     </tr>`}).join("")||"<tr><td colspan='6' style='text-align:center;color:var(--text3);padding:32px'>Sin indisponibilidades</td></tr>";}
 
+// ── VISTA SEMANAL ─────────────────────────────────────────────────────────────
+function semPrev(){semOffset--;renderSemanal();}
+function semNext(){semOffset++;renderSemanal();}
+function getSemDates(){
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const dow=hoy.getDay();const lun=new Date(hoy);
+  lun.setDate(hoy.getDate()-(dow===0?6:dow-1)+semOffset*7);
+  const days=[];for(let i=0;i<7;i++){const d=new Date(lun);d.setDate(lun.getDate()+i);days.push(d);}
+  return days;}
+function renderSemanal(){
+  const d=getData();const days=getSemDates();const today=fmtDate(new Date());
+  document.getElementById("sem-label").textContent=`Lun ${fd2(days[0])} → Dom ${fd2(days[6])} ${days[0].getFullYear()}`;
+  const airports=["MAD","BCN"];
+  const airNames={"MAD":"Madrid Barajas","BCN":"Barcelona El Prat"};
+  let html="";
+  airports.forEach(ap=>{
+    const agents=d.agents.filter(a=>a.aeropuerto===ap);if(!agents.length)return;
+    html+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg3)">
+        <span class="airport-badge ${ap==="MAD"?"badge-mad":"badge-bcn"}">${ap}</span>
+        <span style="font-weight:600">${airNames[ap]}</span>
+      </div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:580px">
+        <thead><tr>
+          <th style="padding:10px 14px;text-align:left;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border);min-width:110px">Comercial</th>
+          ${days.map(dy=>{const ds=fmtDate(dy);const isHoy=ds===today;const isWk=dy.getDay()===0||dy.getDay()===6;
+            return`<th style="padding:8px 4px;text-align:center;font-size:11px;color:${isWk?"var(--amber)":"var(--text3)"};border-bottom:1px solid var(--border);${isHoy?"background:rgba(217,72,84,0.08)":""}">
+              ${DIAS_SEMANA[dy.getDay()]}<br><span style="font-size:13px;font-weight:700;color:${isHoy?"var(--brand)":"var(--text)"}">${dy.getDate()}</span></th>`;}).join("")}
+        </tr></thead>
+        <tbody>${agents.map(a=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:26px;height:26px;border-radius:50%;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${getInitials(a.nombre)}</div>
+              <span style="font-size:12px;font-weight:500">${a.nombre.split(" ")[0]}</span>
+            </div>
+          </td>
+          ${days.map(dy=>{const ds=fmtDate(dy);const s=getAgentStatus(a,dy);const isHoy=ds===today;
+            const conflict=(s==="libre"||s==="libre-puntual")&&d.agents.some(x=>x.id!==a.id&&x.aeropuerto===a.aeropuerto&&((x.libresSemana||[]).includes(dy.getDay())||(x.diasLibresPuntuales||[]).includes(ds)));
+            let bg="transparent",txt="",color="var(--text3)",fw="400";
+            if(s==="libre"){bg="var(--amber-bg)";txt="Libre fijo";color="var(--amber)";fw="600";}
+            else if(s==="libre-puntual"){bg="rgba(245,166,35,0.15)";color="var(--amber)";fw="600";
+              const com=(a.libresComentarios||{})[ds];const ts=(a.libresTimestamps||{})[ds];
+              txt="Libre"+(com?": "+com:"")+(ts?" ("+new Date(ts).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+")":"");}
+            else if(s==="no-disponible"){bg="var(--red-bg)";txt="No disp.";color="var(--red)";fw="600";}
+            else if(s==="no-disp-fija"){bg="rgba(229,83,75,.22)";txt="No disp.";color="var(--red)";fw="600";}
+            if(conflict){bg="rgba(217,72,84,0.2)";}
+            return`<td style="padding:3px;text-align:center;${isHoy?"background:rgba(217,72,84,0.04)":""}">
+              <div style="background:${bg};border-radius:5px;padding:5px 2px;font-size:10px;font-weight:${fw};color:${color};min-height:30px;display:flex;align-items:center;justify-content:center;flex-direction:column" title="${txt}">
+                ${s==="disponible"?"·":conflict?"⚠️":["libre","libre-puntual"].includes(s)?"L":"✕"}
+                ${conflict?`<span style="font-size:8px">conflicto</span>`:""}
+              </div></td>`;}).join("")}
+        </tr>`).join("")}</tbody>
+      </table></div></div>`;});
+
+  // Conflict summary
+  const conflicts=[];
+  ["MAD","BCN"].forEach(ap=>{
+    const apA=d.agents.filter(a=>a.aeropuerto===ap);
+    days.forEach(dy=>{
+      const ds=fmtDate(dy);
+      const libres=apA.filter(a=>{const s=getAgentStatus(a,dy);return["libre","libre-puntual"].includes(s);});
+      if(libres.length>1)conflicts.push({ap,ds,agents:libres,dt:dy});});});
+
+  if(conflicts.length){
+    html+=`<div style="background:rgba(217,72,84,0.08);border:1px solid rgba(217,72,84,0.3);border-radius:var(--radius);padding:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--brand-light);margin-bottom:12px"><i class="ti ti-alert-triangle"></i> Conflictos esta semana (${conflicts.length})</div>
+      ${conflicts.map(c=>{
+        const dateStr=DIAS_SEMANA[c.dt.getDay()]+" "+c.dt.getDate()+" "+MESES_C[c.dt.getMonth()];
+        const sorted=[...c.agents].sort((a,b)=>{
+          const ta=(a.libresTimestamps||{})[c.ds]||"9999";
+          const tb=(b.libresTimestamps||{})[c.ds]||"9999";
+          return ta.localeCompare(tb);});
+        return`<div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">${c.ap} · ${dateStr}</div>
+            ${sorted.map((a,i)=>{
+              const ts=(a.libresTimestamps||{})[c.ds];
+              const com=(a.libresComentarios||{})[c.ds];
+              const tsStr=ts?new Date(ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"Sin timestamp";
+              return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:5px">
+                <span style="background:${i===0?"var(--green-bg)":"var(--red-bg)"};color:${i===0?"var(--green)":"var(--red)"};border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700;white-space:nowrap">${i===0?"1º primero":"2º después"}</span>
+                <div style="width:22px;height:22px;border-radius:50%;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">${getInitials(a.nombre)}</div>
+                <span style="font-weight:500">${a.nombre}</span>
+                <span style="color:var(--text3)">${tsStr}</span>
+                ${com?`<span style="color:var(--text2);font-style:italic">"${com}"</span>`:""}
+              </div>`;}).join("")}
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="resolverConflicto('${c.ap}','${c.ds}',${JSON.stringify(sorted.map(x=>x.id))})">
+            <i class="ti ti-gavel"></i> Resolver
+          </button>
+        </div>`;}).join("")}
+    </div>`;}
+
+  document.getElementById("semanal-content").innerHTML=html;}
+
+// ── RESOLVER CONFLICTO ────────────────────────────────────────────────────────
+function resolverConflicto(ap,ds,agentIds){
+  const d=getData();
+  const agents=agentIds.map(id=>d.agents.find(a=>a.id===id)).filter(Boolean);
+  const dt=new Date(ds+"T00:00:00");
+  const dateStr=DIAS_SEMANA[dt.getDay()]+" "+dt.getDate()+" "+MESES_C[dt.getMonth()];
+  document.getElementById("resolver-date").textContent=ap+" · "+dateStr;
+  document.getElementById("resolver-ds").value=ds;
+  document.getElementById("resolver-agents").value=JSON.stringify(agentIds);
+  document.getElementById("resolver-opts").innerHTML=agents.map((a,i)=>{
+    const ts=(a.libresTimestamps||{})[ds];
+    const com=(a.libresComentarios||{})[ds];
+    const tsStr=ts?new Date(ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+    return`<label style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;border:1px solid var(--border)">
+      <input type="radio" name="resolver-opt" value="${a.id}" ${i===0?"checked":""} style="width:16px;height:16px;accent-color:var(--brand)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${getInitials(a.nombre)}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">${a.nombre}</div>
+        <div style="font-size:11px;color:${i===0?"var(--green)":"var(--text3)"}">
+          ${i===0?"✅ Primero en pedirlo":"Pedido después"}${tsStr?" · "+tsStr:""}
+        </div>
+        ${com?`<div style="font-size:11px;color:var(--text2);font-style:italic">"${com}"</div>`:""}
+      </div>
+    </label>`;}).join("");
+  openModal("modal-resolver");}
+
+function confirmarResolucion(){
+  const ds=document.getElementById("resolver-ds").value;
+  const allIds=JSON.parse(document.getElementById("resolver-agents").value);
+  const selected=parseInt(document.querySelector('input[name="resolver-opt"]:checked').value);
+  const d=getData();
+  allIds.forEach(id=>{
+    if(id===selected)return;
+    const a=d.agents.find(x=>x.id===id);if(!a)return;
+    if(a.diasLibresPuntuales)a.diasLibresPuntuales=a.diasLibresPuntuales.filter(x=>x!==ds);
+    if(a.libresTimestamps)delete a.libresTimestamps[ds];
+    if(a.libresComentarios)delete a.libresComentarios[ds];});
+  saveData(d);closeModal("modal-resolver");renderSemanal();}
+
+// ── EXPORTAR ──────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const d=getData();
+  const month=parseInt(document.getElementById("exp-month").value);
+  const year=new Date().getFullYear();
+  const dim=new Date(year,month+1,0).getDate();
+  let csv="Comercial;Aeropuerto;";
+  for(let i=1;i<=dim;i++){const dt=new Date(year,month,i);csv+=`${DIAS_SEMANA[dt.getDay()]} ${i};`;}
+  csv+="\n";
+  d.agents.forEach(a=>{
+    csv+=`${a.nombre};${a.aeropuerto};`;
+    for(let i=1;i<=dim;i++){
+      const dt=new Date(year,month,i);const s=getAgentStatus(a,dt);
+      const lb={disponible:"Disponible",libre:"Libre fijo","libre-puntual":"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"};
+      csv+=(lb[s]||s)+";";
+    }csv+="\n";});
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");
+  a.href=url;a.download=`planning_${MESES[month]}_${year}.csv`;a.click();URL.revokeObjectURL(url);}
+
+
+function exportPrint(){
+  const d=getData();const month=parseInt(document.getElementById("exp-month").value);
+  const airport=document.getElementById("exp-airport").value;
+  const year=new Date().getFullYear();const dim=new Date(year,month+1,0).getDate();
+  let agents=d.agents;if(airport)agents=agents.filter(a=>a.aeropuerto===airport);
+  let rows=agents.map(a=>{
+    const cells=[];
+    for(let i=1;i<=dim;i++){const dt=new Date(year,month,i);const s=getAgentStatus(a,dt);
+      const isWk=dt.getDay()===0||dt.getDay()===6;
+      let bg="",txt="·",col="#555";
+      if(s==="libre"){bg="#fff3cd";txt="L";col="#856404";}
+      else if(s==="libre-puntual"){bg="#fffbcc";txt="L";col="#856404";}
+      else if(["no-disponible","no-disp-fija"].includes(s)){bg="#fde8e8";txt="✕";col="#c00";}
+      cells.push("<td style='text-align:center;padding:3px 1px;font-size:9px;background:"+(bg||(isWk?"#f8f9fa":""))+";color:"+col+";border:1px solid #dee2e6;font-weight:"+(bg?"700":"400")+"'>"+txt+"</td>");}
+    return "<tr><td style='padding:3px 6px;font-size:10px;font-weight:600;white-space:nowrap;border:1px solid #dee2e6'>"+a.nombre+"</td><td style='padding:3px 6px;font-size:9px;border:1px solid #dee2e6'>"+a.aeropuerto+"</td>"+cells.join("")+"</tr>";}).join("");
+  let heads="<th style='padding:4px 6px;border:1px solid #dee2e6'>Comercial</th><th style='padding:4px 6px;border:1px solid #dee2e6'>AEP</th>";
+  for(let i=1;i<=dim;i++){const dt=new Date(year,month,i);const isWk=dt.getDay()===0||dt.getDay()===6;
+    heads+="<th style='padding:2px 1px;font-size:8px;text-align:center;background:"+(isWk?"#e9ecef":"")+";border:1px solid #dee2e6'>"+DIAS_SEMANA[dt.getDay()]+"<br>"+i+"</th>";}
+  const html="<!DOCTYPE html><html><head><title>Planning "+MESES[month]+" "+year+"</title>"
+    +"<style>body{font-family:Arial,sans-serif}@media print{@page{size:landscape;margin:8mm}}</style></head>"
+    +"<body><h3 style='margin-bottom:6px'>Planning "+MESES[month]+" "+year+(airport?" · "+airport:"")+"</h3>"
+    +"<table style='border-collapse:collapse;width:100%'><thead><tr>"+heads+"</tr></thead><tbody>"+rows+"</tbody></table>"
+    +"<scr"+"ipt>window.onload=function(){window.print()}<\/scr"+"ipt></body></html>";
+  const win=window.open("","_blank");
+  win.document.write(html);win.document.close();}
+
+
+// ── MODAL AGENT ───────────────────────────────────────────────────────────────
 function openModalAdd(airport){
   libreSelDays=[];
   document.getElementById("modal-agent-title").textContent="Nuevo comercial";
@@ -524,7 +766,7 @@ function saveAgent(){
   const nombre=document.getElementById("f-nombre").value.trim();const pass=document.getElementById("f-pass").value.trim();
   if(!nombre){alert("El nombre es obligatorio");return;}if(!pass){alert("La contraseña es obligatoria");return;}
   if(id){const a=data.agents.find(x=>x.id===parseInt(id));if(a){a.nombre=nombre;a.aeropuerto=document.getElementById("f-aeropuerto").value;a.tel=document.getElementById("f-tel").value.trim();a.email=document.getElementById("f-email").value.trim();a.pass=pass;a.libresSemana=[...libreSelDays];}}
-  else{data.agents.push({id:data.nextId++,nombre,aeropuerto:document.getElementById("f-aeropuerto").value,tel:document.getElementById("f-tel").value.trim(),email:document.getElementById("f-email").value.trim(),pass,colorIdx:data.agents.length%8,libresSemana:[...libreSelDays]});}
+  else{data.agents.push({id:data.nextId++,nombre,aeropuerto:document.getElementById("f-aeropuerto").value,tel:document.getElementById("f-tel").value.trim(),email:document.getElementById("f-email").value.trim(),pass,colorIdx:data.agents.length%8,libresSemana:[],diasLibresPuntuales:[],libresTimestamps:{},libresComentarios:{}});}
   saveData(data);closeModal("modal-agent");
   if(currentPage==="dashboard")renderDashboard();
   if(currentPage==="comerciales")renderTable();
@@ -537,6 +779,25 @@ document.querySelectorAll(".modal-overlay").forEach(el=>el.addEventListener("cli
 if(!localStorage.getItem("rpv_data"))saveData(getDefaultData());
 renderDashboard();
 loadFromSheets();
-</script></script>
+</script>
+
+<!-- MODAL RESOLVER CONFLICTO -->
+<div class="modal-overlay" id="modal-resolver">
+  <div class="modal" style="width:500px;max-height:85vh">
+    <div class="modal-header">
+      <div><div class="modal-title">Resolver conflicto</div><div style="font-size:13px;color:var(--text3)" id="resolver-date"></div></div>
+      <button class="btn-icon" onclick="closeModal('modal-resolver')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="resolver-ds"><input type="hidden" id="resolver-agents">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Selecciona quién se queda con el día libre. El día se eliminará del otro comercial automáticamente.</p>
+      <div id="resolver-opts"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-resolver')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarResolucion()"><i class="ti ti-gavel"></i> Confirmar asignación</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
