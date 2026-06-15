@@ -358,16 +358,15 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
     <div class="modal-handle"></div>
     <div class="modal-title">Disponibilidad parcial</div>
     <div class="modal-sub">Indica en qué horario estarás disponible parcialmente</div>
-    <label style="display:block;margin-bottom:8px">Tipo</label>
     <div style="font-size:12px;color:var(--text2);background:rgba(74,127,255,0.08);border:1px solid rgba(74,127,255,0.2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px">
       <i class="ti ti-info-circle" style="font-size:13px;color:var(--blue-light)"></i>
       Registra aquí cuando estés disponible <strong>solo parte del día</strong>. Para días libres completos usa <strong>Mis libres</strong>.
     </div>
     <div class="tipo-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div class="tipo-btn sel" data-tipo="parcial" onclick="setTipo('parcial')"><i class="ti ti-clock-hour-4"></i>Con horario<br><span style="font-size:9px;opacity:.7">puntual</span></div>
-      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Con horario<br><span style="font-size:9px;opacity:.7">fija semanal</span></div>
+      <div class="tipo-btn sel" data-tipo="parcial" onclick="setTipo('parcial')"><i class="ti ti-calendar-event"></i>Día concreto<br><span style="font-size:9px;opacity:.7">fecha específica</span></div>
+      <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Se repite<br><span style="font-size:9px;opacity:.7">cada semana</span></div>
     </div>
-    <div id="f-puntual"><div class="form-group"><label>Fecha</label><input type="date" id="f-fecha"></div></div>
+
     <div id="f-parcial" style="display:none">
       <div class="form-group"><label>Fecha</label><input type="date" id="f-parcial-fecha"></div>
       <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px">
@@ -402,10 +401,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
         </div>
       </div>
     </div>
-    <div id="f-rango" style="display:none">
-      <div class="form-group"><label>Desde</label><input type="date" id="f-desde"></div>
-      <div class="form-group"><label>Hasta</label><input type="date" id="f-hasta"></div>
-    </div>
+
     <div id="f-fija" style="display:none">
       <label style="display:block;margin-bottom:8px">Días de la semana</label>
       <div class="week-days-row" id="fija-days-row">
@@ -415,25 +411,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
         <span class="week-day-chip" data-d="6">Sáb</span>
       </div>
     </div>
-    <div class="form-group" style="margin-top:12px">
-      <label>¿Todo el día?</label>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <button id="btn-todo-dia" class="tipo-btn sel" style="flex:1;padding:10px" onclick="setTodoDia(true)"><i class="ti ti-sun"></i>Todo el día</button>
-        <button id="btn-con-hora" class="tipo-btn" style="flex:1;padding:10px" onclick="setTodoDia(false)"><i class="ti ti-clock"></i>Con horario</button>
-      </div>
-      <div id="horario-fields" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="form-group" style="margin-bottom:0">
-            <label>Hora inicio</label>
-            <input type="time" id="f-hora-inicio" value="09:00">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Hora fin</label>
-            <input type="time" id="f-hora-fin" value="18:00">
-          </div>
-        </div>
-      </div>
-    </div>
+
     <div class="form-group"><label>Motivo</label><input type="text" id="f-motivo" placeholder="Ej: Médico, Curso..."></div>
     <div class="form-group">
       <label>Descripción <span style="color:var(--brand);font-size:10px">★ visible para todos</span></label>
@@ -1227,6 +1205,8 @@ function openAddIndisp(){
   document.getElementById("f-desde").value=fd(new Date());
   document.getElementById("f-hasta").value=fd(new Date());
   setTipo("parcial");
+  setParcialTipo("hasta");
+  document.getElementById("f-parcial-fecha").value=fd(new Date());
   document.getElementById("f-motivo").value="";
   document.getElementById("f-desc").value="";
   document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
@@ -1235,18 +1215,10 @@ function openAddIndisp(){
   openModal("modal-indisp");
 }
 let todoDia=true;
-function setTodoDia(v){
-  todoDia=v;
-  document.getElementById("btn-todo-dia").classList.toggle("sel",v);
-  document.getElementById("btn-con-hora").classList.toggle("sel",!v);
-  document.getElementById("horario-fields").style.display=v?"none":"block";
-}
 function setTipo(t){
   iTipo=t;
   document.querySelectorAll(".tipo-btn[data-tipo]").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
-  document.getElementById("f-puntual").style.display="none"; // never shown in indisp
   document.getElementById("f-parcial").style.display=t==="parcial"?"block":"none";
-  document.getElementById("f-rango").style.display="none";   // never shown in indisp
   document.getElementById("f-fija").style.display=t==="fija"?"block":"none";
 }
 
@@ -1263,9 +1235,7 @@ document.getElementById("fija-days-row").addEventListener("click",e=>{
 });
 function saveIndisp(){
   const d=gD();
-  const horaInicio=!todoDia?document.getElementById("f-hora-inicio").value:"";
-  const horaFin=!todoDia?document.getElementById("f-hora-fin").value:"";
-  const tramo=(!todoDia&&horaInicio&&horaFin)?horaInicio+" - "+horaFin:"";
+  const tramo=""; // tramo handled by parcial sub-type
   const obj={id:d.nextId++,agentId:CA.id,tipo:iTipo,
     motivo:document.getElementById("f-motivo").value.trim(),
     tramo:tramo,
