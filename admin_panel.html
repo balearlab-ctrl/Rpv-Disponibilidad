@@ -421,8 +421,8 @@ function showDetalle(id){
   const indisps=d.indisponibilidades.filter(i=>i.agentId===id);
   const indispHTML=indisps.length?indisps.map(i=>{
     let desc="";
-    if(i.tipo==="puntual")desc=fmtDateES(i.desde)+(i.tramo?" · "+i.tramo:"");
-    else if(i.tipo==="rango")desc=fmtDateES(i.desde)+" → "+fmtDateES(i.hasta)+(i.tramo?" · "+i.tramo:"");
+    if(i.tipo==="puntual")desc=fmtDateES(i.desde)+(i.tramo?" · ⏰ "+i.tramo:"");
+    else if(i.tipo==="rango")desc=fmtDateES(i.desde)+" → "+fmtDateES(i.hasta)+(i.tramo?" · ⏰ "+i.tramo:"");
     else if(i.tipo==="fija")desc="Cada "+(i.dias||[]).map(x=>DIAS_ES[x]).join(", ")+(i.tramo?" · "+i.tramo:"");
     const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-item"><i class="ti ti-calendar-off indisp-icon"></i>
@@ -554,7 +554,7 @@ function renderIndisponibilidades(){
       <td><span class="pill ${a.aeropuerto==="MAD"?"pill-mad":"pill-bcn"}">${a.aeropuerto}</span></td>
       <td><span class="pill" style="${ps}">${i.tipo}</span></td>
       <td style="color:var(--text2)">${fechas}</td>
-      <td style="color:var(--text2)">${i.tramo||"—"}</td>
+      <td style="color:var(--text2)">${i.tramo?`<i class="ti ti-clock" style="font-size:11px;vertical-align:-1px"></i> ${i.tramo}`:'Todo el día'}</td>
       <td style="color:var(--text2)">${i.motivo||"—"}${i.descripcion?`<br><span style="font-size:11px;color:var(--text3);font-style:italic">"${i.descripcion}"</span>`:""}</td>
     </tr>`}).join("")||"<tr><td colspan='6' style='text-align:center;color:var(--text3);padding:32px'>Sin indisponibilidades</td></tr>";}
 

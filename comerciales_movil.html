@@ -308,12 +308,23 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
       </div>
     </div>
     <div class="form-group" style="margin-top:12px">
-      <label>Tramo horario <span style="color:var(--text3)">(opcional)</span></label>
-      <select id="f-tramo">
-        <option value="">Todo el día</option>
-        <option>Mañana (06:00-14:00)</option><option>Tarde (14:00-22:00)</option>
-        <option>Noche (22:00-06:00)</option><option>Turno 1</option><option>Turno 2</option>
-      </select>
+      <label>¿Todo el día?</label>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="btn-todo-dia" class="tipo-btn sel" style="flex:1;padding:10px" onclick="setTodoDia(true)"><i class="ti ti-sun"></i>Todo el día</button>
+        <button id="btn-con-hora" class="tipo-btn" style="flex:1;padding:10px" onclick="setTodoDia(false)"><i class="ti ti-clock"></i>Con horario</button>
+      </div>
+      <div id="horario-fields" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Hora inicio</label>
+            <input type="time" id="f-hora-inicio" value="09:00">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Hora fin</label>
+            <input type="time" id="f-hora-fin" value="18:00">
+          </div>
+        </div>
+      </div>
     </div>
     <div class="form-group"><label>Motivo</label><input type="text" id="f-motivo" placeholder="Ej: Médico, Curso..."></div>
     <div class="form-group">
@@ -633,13 +644,13 @@ function renderIndisp(){
     if(i.tipo==="puntual")dates=fdes(i.desde);
     else if(i.tipo==="rango"){dates=fdes(i.desde)+" → "+fdes(i.hasta);icon="ti-calendar-stats";}
     else if(i.tipo==="fija"){dates=(i.dias||[]).map(x=>DS[x]).join(" · ");icon="ti-repeat";wc="fija";}
-    const tr=i.tramo?" · "+i.tramo:"";
+    const tr=i.tramo||"";
     const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-card">
       <div class="indisp-icon-wrap ${wc}"><i class="ti ${icon}" style="font-size:16px"></i></div>
       <div class="indisp-body">
         <div class="indisp-name">${i.motivo||"Sin descripción"}</div>
-        <div class="indisp-meta">${dates}${tr}</div>
+        <div class="indisp-meta">${dates}${tr?` · <i class="ti ti-clock" style="font-size:11px;vertical-align:-1px"></i> ${tr}`:""}</div>
         ${i.descripcion?`<div class="indisp-desc-text">"${i.descripcion}"</div>`:""}
         <span class="pill" style="font-size:10px;margin-top:5px;${ps}">${i.tipo}</span>
       </div>
@@ -657,15 +668,22 @@ function openAddIndisp(){
   document.getElementById("f-fecha").value=fd(new Date());
   document.getElementById("f-desde").value=fd(new Date());
   document.getElementById("f-hasta").value=fd(new Date());
-  document.getElementById("f-tramo").value="";
+  setTodoDia(true);
   document.getElementById("f-motivo").value="";
   document.getElementById("f-desc").value="";
   document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
   openModal("modal-indisp");
 }
+let todoDia=true;
+function setTodoDia(v){
+  todoDia=v;
+  document.getElementById("btn-todo-dia").classList.toggle("sel",v);
+  document.getElementById("btn-con-hora").classList.toggle("sel",!v);
+  document.getElementById("horario-fields").style.display=v?"none":"block";
+}
 function setTipo(t){
   iTipo=t;
-  document.querySelectorAll(".tipo-btn").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
+  document.querySelectorAll(".tipo-btn[data-tipo]").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
   document.getElementById("f-puntual").style.display=t==="puntual"?"block":"none";
   document.getElementById("f-rango").style.display=t==="rango"?"block":"none";
   document.getElementById("f-fija").style.display=t==="fija"?"block":"none";
@@ -678,9 +696,12 @@ document.getElementById("fija-days-row").addEventListener("click",e=>{
 });
 function saveIndisp(){
   const d=gD();
+  const horaInicio=!todoDia?document.getElementById("f-hora-inicio").value:"";
+  const horaFin=!todoDia?document.getElementById("f-hora-fin").value:"";
+  const tramo=(!todoDia&&horaInicio&&horaFin)?horaInicio+" - "+horaFin:"";
   const obj={id:d.nextId++,agentId:CA.id,tipo:iTipo,
     motivo:document.getElementById("f-motivo").value.trim(),
-    tramo:document.getElementById("f-tramo").value,
+    tramo:tramo,
     descripcion:document.getElementById("f-desc").value.trim()};
   if(iTipo==="puntual"){obj.desde=document.getElementById("f-fecha").value;if(!obj.desde){alert("Selecciona una fecha");return;}}
   else if(iTipo==="rango"){obj.desde=document.getElementById("f-desde").value;obj.hasta=document.getElementById("f-hasta").value;if(!obj.desde||!obj.hasta){alert("Selecciona las fechas");return;}if(obj.desde>obj.hasta){alert("La fecha inicio debe ser anterior");return;}}
