@@ -208,6 +208,7 @@ textarea{resize:vertical;min-height:70px}
       <span class="section-title">Disponibilidad del equipo</span>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre fijo</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(74,127,255,0.18);border:1px solid rgba(74,127,255,0.5)"></div> <span style="font-weight:600">½</span> Parcial</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(245,166,35,0.12);border:1px dashed rgba(245,166,35,0.5)"></div> <span style="font-weight:600">L</span> Libre puntual</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.18);border:1px solid rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disponible</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(229,83,75,0.1);border:1px dashed rgba(229,83,75,0.4)"></div> <span style="font-weight:600">✕</span> No disp. fija</div>
@@ -391,6 +392,7 @@ function getAgentStatus(agent,date){
   if((agent.libresSemana||[]).includes(dow))return"libre";
   if((agent.diasLibresPuntuales||[]).includes(ds))return"libre-puntual";
   for(const i of d.indisponibilidades.filter(i=>i.agentId===agent.id)){
+    if(i.tipo==="parcial"&&ds===i.desde)return"parcial";
     if(i.tipo==="puntual"&&ds===i.desde)return"no-disponible";
     if(i.tipo==="rango"&&ds>=i.desde&&ds<=(i.hasta||i.desde))return"no-disponible";
     if(i.tipo==="fija"&&(i.dias||[]).includes(dow))return"no-disp-fija";
@@ -416,11 +418,13 @@ function renderDashboard(){
   const mad=d.agents.filter(a=>a.aeropuerto==="MAD");const bcn=d.agents.filter(a=>a.aeropuerto==="BCN");
   const disp=d.agents.filter(a=>getAgentStatus(a,today)==="disponible");
   const libr=d.agents.filter(a=>["libre","libre-puntual"].includes(getAgentStatus(a,today)));
+  const parc=d.agents.filter(a=>getAgentStatus(a,today)==="parcial");
   const noD=d.agents.filter(a=>["no-disponible","no-disp-fija"].includes(getAgentStatus(a,today)));
   document.getElementById("stats-grid").innerHTML=
     stat("Total comerciales",d.agents.length,mad.length+" MAD · "+bcn.length+" BCN")+
     stat("Disponibles hoy",disp.length,"Activos","var(--green)")+
     stat("Libres hoy",libr.length,"Día libre","var(--amber)")+
+    stat("Parciales hoy",parc.length,"Con horario","var(--blue-light)")+
     stat("No disponibles",noD.length,"Hoy","var(--red)")+
     stat("Indisponibilidades",d.indisponibilidades.length,"Registradas total");
   document.getElementById("airports-grid").innerHTML=
@@ -433,8 +437,8 @@ function renderAirportSection(code,name,badgeCls,agents){
   const today=new Date();
   const cards=agents.map(a=>{
     const s=getAgentStatus(a,today);
-    const sl={disponible:"Disponible",libre:"Libre fijo","libre-puntual":"Libre","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
-    const dc=s==="disponible"?"disponible":["libre","libre-puntual"].includes(s)?"libre":"no-disponible";
+    const sl={disponible:"Disponible",libre:"Libre fijo","libre-puntual":"Libre",parcial:"Parcial","no-disponible":"No disponible","no-disp-fija":"No disp. fija"}[s]||"—";
+    const dc=s==="disponible"?"disponible":["libre","libre-puntual"].includes(s)?"libre":s==="parcial"?"disponible":"no-disponible";
     return`<div class="agent-card" onclick="showDetalle(${a.id})">
       <div class="agent-avatar" style="background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]}">${getInitials(a.nombre)}</div>
       <div class="agent-info"><div class="agent-name">${a.nombre}</div><div class="agent-meta">${a.tel||"Sin tel"}</div></div>
@@ -486,7 +490,7 @@ function showDetalle(id){
     if(i.tipo==="puntual")desc=fmtDateES(i.desde)+(i.tramo?" · ⏰ "+i.tramo:"");
     else if(i.tipo==="rango")desc=fmtDateES(i.desde)+" → "+fmtDateES(i.hasta)+(i.tramo?" · ⏰ "+i.tramo:"");
     else if(i.tipo==="fija")desc="Cada "+(i.dias||[]).map(x=>DIAS_ES[x]).join(", ")+(i.tramo?" · "+i.tramo:"");
-    const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
+    const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":i.tipo==="parcial"?"background:rgba(74,127,255,0.15);color:var(--blue-light)":"background:var(--red-bg);color:var(--red)";
     return`<div class="indisp-item"><i class="ti ti-calendar-off indisp-icon"></i>
       <div class="indisp-desc"><div class="indisp-motivo">${i.motivo||"Sin descripción"}</div>
         <div class="indisp-sub">${desc}</div>
@@ -605,6 +609,9 @@ function renderCalendar(){
         } else if(s==="libre-puntual"){
           bg="rgba(245,166,35,0.12)";color="var(--amber)";txt="L";
           border="1px dashed rgba(245,166,35,0.5)";
+        } else if(s==="parcial"){
+          bg="rgba(74,127,255,0.18)";color="var(--blue-light)";txt="½";
+          border="1px solid rgba(74,127,255,0.5)";
         } else if(s==="no-disponible"){
           bg="rgba(229,83,75,0.22)";color="var(--red)";txt="✕";
           border="1px solid rgba(229,83,75,0.5)";
@@ -650,7 +657,7 @@ function renderIndisponibilidades(){
     if(i.tipo==="puntual")fechas=fmtDateES(i.desde);
     else if(i.tipo==="rango")fechas=fmtDateES(i.desde)+" → "+fmtDateES(i.hasta);
     else if(i.tipo==="fija")fechas=(i.dias||[]).map(x=>DIAS_ES[x]).join(", ");
-    const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":"background:var(--red-bg);color:var(--red)";
+    const ps=i.tipo==="fija"?"background:rgba(229,83,75,.22);color:var(--red)":i.tipo==="parcial"?"background:rgba(74,127,255,0.15);color:var(--blue-light)":"background:var(--red-bg);color:var(--red)";
     return`<tr>
       <td><div style="display:flex;align-items:center;gap:8px">
         <div style="width:26px;height:26px;border-radius:50%;background:${BG_COLORS[a.colorIdx%8]};color:${COLORS[a.colorIdx%8]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${getInitials(a.nombre)}</div>
@@ -922,6 +929,7 @@ function showCalTip(e, tipId) {
   const statusConfig = {
     "libre":        { color:"var(--amber)",    bg:"rgba(245,166,35,0.15)",   label:"Día libre fijo",      icon:"ti-sun" },
     "libre-puntual":{ color:"var(--amber)",    bg:"rgba(245,166,35,0.1)",    label:"Día libre puntual",   icon:"ti-calendar-check" },
+    "parcial":      { color:"var(--blue-light)", bg:"rgba(74,127,255,0.15)",  label:"Parcial",             icon:"ti-clock-hour-4" },
     "no-disponible":{ color:"var(--red)",      bg:"rgba(229,83,75,0.15)",    label:"No disponible",       icon:"ti-calendar-x" },
     "no-disp-fija": { color:"var(--red)",      bg:"rgba(229,83,75,0.2)",     label:"No disp. (fija)",     icon:"ti-repeat" },
   };

@@ -59,6 +59,8 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .status-banner.disponible i{color:var(--green)}
 .status-banner.libre i{color:var(--amber)}
 .status-banner.no-disponible i{color:var(--red)}
+.status-banner.parcial{background:rgba(74,127,255,0.1);border:1px solid rgba(74,127,255,0.3)}
+.status-banner.parcial i{color:var(--blue-light)}
 .banner-title{font-size:15px;font-weight:600}
 .banner-sub{font-size:12px;color:var(--text2);margin-top:2px}
 
@@ -76,6 +78,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .mini-cal-cell.libre{background:var(--amber-bg);color:var(--amber);font-weight:700}
 .mini-cal-cell.libre-puntual{background:rgba(245,166,35,0.25);color:var(--amber);font-weight:700}
 .mini-cal-cell.no-disp{background:var(--red-bg);color:var(--red);font-weight:700}
+.mini-cal-cell.parcial{background:rgba(74,127,255,0.15);color:var(--blue-light);font-weight:700}
 .mini-cal-cell.no-disp-fija{background:rgba(229,83,75,.22);color:var(--red);font-weight:700}
 .mini-cal-cell.past{opacity:.3}
 
@@ -92,6 +95,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 .indisp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
 .indisp-icon-wrap{width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--red-bg);color:var(--red)}
 .indisp-icon-wrap.fija{background:rgba(229,83,75,.22)}
+.indisp-icon-wrap.parcial{background:rgba(74,127,255,0.15);color:var(--blue-light)}
 .indisp-body{flex:1}
 .indisp-name{font-size:13px;font-weight:600}
 .indisp-meta{font-size:12px;color:var(--text3);margin-top:2px}
@@ -203,6 +207,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
       <div class="legend">
         <div class="legend-item"><div class="legend-dot ld-libre"></div>Libre fijo</div>
         <div class="legend-item"><div class="legend-dot ld-lp"></div>Libre puntual</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(74,127,255,0.15);border:1px solid var(--blue-light)"></div>Parcial</div>
         <div class="legend-item"><div class="legend-dot ld-nodisp"></div>No disponible</div>
       </div>
       <div class="cal-nav">
@@ -288,12 +293,47 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
     <div class="modal-title">Nueva indisponibilidad</div>
     <div class="modal-sub">Indica cuándo no podrás estar disponible</div>
     <label style="display:block;margin-bottom:8px">Tipo</label>
-    <div class="tipo-row">
-      <div class="tipo-btn sel" data-tipo="puntual" onclick="setTipo('puntual')"><i class="ti ti-calendar-event"></i>Día puntual</div>
+    <div class="tipo-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="tipo-btn sel" data-tipo="puntual" onclick="setTipo('puntual')"><i class="ti ti-calendar-event"></i>Día completo</div>
+      <div class="tipo-btn" data-tipo="parcial" onclick="setTipo('parcial')"><i class="ti ti-clock-hour-4"></i>Parcial<br><span style="font-size:9px;opacity:.7">con horario</span></div>
       <div class="tipo-btn" data-tipo="rango" onclick="setTipo('rango')"><i class="ti ti-calendar-stats"></i>Rango fechas</div>
       <div class="tipo-btn" data-tipo="fija" onclick="setTipo('fija')"><i class="ti ti-repeat"></i>Fija semanal</div>
     </div>
     <div id="f-puntual"><div class="form-group"><label>Fecha</label><input type="date" id="f-fecha"></div></div>
+    <div id="f-parcial" style="display:none">
+      <div class="form-group"><label>Fecha</label><input type="date" id="f-parcial-fecha"></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500">¿Cómo es la disponibilidad parcial?</div>
+        <div style="display:flex;flex-direction:column;gap:6px" id="parcial-tipo-row">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <input type="radio" name="parcial-tipo" value="hasta" checked onchange="setParcialTipo('hasta')" style="accent-color:var(--brand);width:16px;height:16px">
+            <div><div style="font-size:13px;font-weight:600">Disponible hasta una hora</div><div style="font-size:11px;color:var(--text3)">Ej: disponible hasta las 20:00, luego cena</div></div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <input type="radio" name="parcial-tipo" value="desde" onchange="setParcialTipo('desde')" style="accent-color:var(--brand);width:16px;height:16px">
+            <div><div style="font-size:13px;font-weight:600">Disponible a partir de una hora</div><div style="font-size:11px;color:var(--text3)">Ej: llega tarde, disponible desde las 11:00</div></div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <input type="radio" name="parcial-tipo" value="tramo" onchange="setParcialTipo('tramo')" style="accent-color:var(--brand);width:16px;height:16px">
+            <div><div style="font-size:13px;font-weight:600">No disponible en un tramo</div><div style="font-size:11px;color:var(--text3)">Ej: no disponible de 14:00 a 16:00</div></div>
+          </label>
+        </div>
+        <div style="margin-top:12px">
+          <div id="parcial-hasta-field">
+            <div class="form-group" style="margin-bottom:0"><label>Disponible hasta las</label><input type="time" id="f-parcial-hasta" value="20:00"></div>
+          </div>
+          <div id="parcial-desde-field" style="display:none">
+            <div class="form-group" style="margin-bottom:0"><label>Disponible a partir de las</label><input type="time" id="f-parcial-desde" value="11:00"></div>
+          </div>
+          <div id="parcial-tramo-field" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group" style="margin-bottom:0"><label>No disponible desde</label><input type="time" id="f-parcial-tramo-ini" value="14:00"></div>
+              <div class="form-group" style="margin-bottom:0"><label>No disponible hasta</label><input type="time" id="f-parcial-tramo-fin" value="16:00"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="f-rango" style="display:none">
       <div class="form-group"><label>Desde</label><input type="date" id="f-desde"></div>
       <div class="form-group"><label>Hasta</label><input type="date" id="f-hasta"></div>
@@ -408,12 +448,12 @@ function status(agent,date){
   if((agent.libresSemana||[]).includes(dow))return"libre";
   if((agent.diasLibresPuntuales||[]).includes(ds))return"libre-puntual";
   for(const i of d.indisponibilidades.filter(i=>i.agentId===agent.id)){
+    if(i.tipo==="parcial"&&ds===i.desde)return"parcial";
     if(i.tipo==="puntual"&&ds===i.desde)return"no-disp";
     if(i.tipo==="rango"&&ds>=i.desde&&ds<=(i.hasta||i.desde))return"no-disp";
     if(i.tipo==="fija"&&(i.dias||[]).includes(dow))return"no-disp-fija";
   }
-  return"disponible";
-}
+  return"disponible";}
 
 function refreshSel(){
   const d=gD();const sel=document.getElementById("login-name");
@@ -494,6 +534,7 @@ function renderMiniCal(){
     if(ds===todayStr)cls+=" today";
     if(s==="libre")cls+=" libre";
     else if(s==="libre-puntual")cls+=" libre-puntual";
+    else if(s==="parcial")cls+=" parcial";
     else if(s==="no-disp")cls+=" no-disp";
     else if(s==="no-disp-fija")cls+=" no-disp-fija";
     h+=`<div class="${cls}">${day}</div>`;
@@ -660,6 +701,7 @@ function renderIndisp(){
   document.getElementById("my-indisp-list").innerHTML=indisps.map(i=>{
     let dates="",icon="ti-calendar-event",wc="";
     if(i.tipo==="puntual")dates=fdes(i.desde);
+    else if(i.tipo==="parcial"){dates=fdes(i.desde);icon="ti-clock-hour-4";wc="parcial";}
     else if(i.tipo==="rango"){dates=fdes(i.desde)+" → "+fdes(i.hasta);icon="ti-calendar-stats";}
     else if(i.tipo==="fija"){dates=(i.dias||[]).map(x=>DS[x]).join(" · ");icon="ti-repeat";wc="fija";}
     const tr=i.tramo||"";
@@ -690,6 +732,8 @@ function openAddIndisp(){
   document.getElementById("f-motivo").value="";
   document.getElementById("f-desc").value="";
   document.querySelectorAll("#fija-days-row .week-day-chip").forEach(c=>c.classList.remove("sel"));
+  document.getElementById("f-parcial-fecha").value=fd(new Date());
+  const r=document.querySelector('input[name="parcial-tipo"][value="hasta"]');if(r){r.checked=true;setParcialTipo("hasta");}
   openModal("modal-indisp");
 }
 let todoDia=true;
@@ -703,8 +747,18 @@ function setTipo(t){
   iTipo=t;
   document.querySelectorAll(".tipo-btn[data-tipo]").forEach(b=>b.classList.toggle("sel",b.dataset.tipo===t));
   document.getElementById("f-puntual").style.display=t==="puntual"?"block":"none";
+  document.getElementById("f-parcial").style.display=t==="parcial"?"block":"none";
   document.getElementById("f-rango").style.display=t==="rango"?"block":"none";
   document.getElementById("f-fija").style.display=t==="fija"?"block":"none";
+  // Hide/show horario for puntual
+  if(t==="puntual"){setTodoDia(true);}
+  if(t==="parcial"){document.getElementById("horario-fields").style.display="none";}
+}
+
+function setParcialTipo(pt){
+  document.getElementById("parcial-hasta-field").style.display=pt==="hasta"?"block":"none";
+  document.getElementById("parcial-desde-field").style.display=pt==="desde"?"block":"none";
+  document.getElementById("parcial-tramo-field").style.display=pt==="tramo"?"block":"none";
 }
 document.getElementById("fija-days-row").addEventListener("click",e=>{
   const chip=e.target.closest(".week-day-chip");if(!chip)return;
@@ -722,6 +776,26 @@ function saveIndisp(){
     tramo:tramo,
     descripcion:document.getElementById("f-desc").value.trim()};
   if(iTipo==="puntual"){obj.desde=document.getElementById("f-fecha").value;if(!obj.desde){alert("Selecciona una fecha");return;}}
+  else if(iTipo==="parcial"){
+    obj.desde=document.getElementById("f-parcial-fecha").value;
+    if(!obj.desde){alert("Selecciona una fecha");return;}
+    const pt=document.querySelector('input[name="parcial-tipo"]:checked');
+    const ptv=pt?pt.value:"hasta";
+    if(ptv==="hasta"){
+      const h=document.getElementById("f-parcial-hasta").value;
+      obj.parcialTipo="hasta";obj.parcialHora=h;
+      obj.tramo="Disponible hasta las "+h;
+    } else if(ptv==="desde"){
+      const h=document.getElementById("f-parcial-desde").value;
+      obj.parcialTipo="desde";obj.parcialHora=h;
+      obj.tramo="Disponible a partir de las "+h;
+    } else if(ptv==="tramo"){
+      const hi=document.getElementById("f-parcial-tramo-ini").value;
+      const hf=document.getElementById("f-parcial-tramo-fin").value;
+      obj.parcialTipo="tramo";obj.parcialHoraIni=hi;obj.parcialHoraFin=hf;
+      obj.tramo="No disponible de "+hi+" a "+hf;
+    }
+  }
   else if(iTipo==="rango"){obj.desde=document.getElementById("f-desde").value;obj.hasta=document.getElementById("f-hasta").value;if(!obj.desde||!obj.hasta){alert("Selecciona las fechas");return;}if(obj.desde>obj.hasta){alert("La fecha inicio debe ser anterior");return;}}
   else if(iTipo==="fija"){if(!fDays.length){alert("Selecciona al menos un día");return;}obj.dias=[...fDays];}
   d.indisponibilidades.push(obj);d.nextId++;
