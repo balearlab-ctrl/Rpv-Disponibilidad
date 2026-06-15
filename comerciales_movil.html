@@ -299,24 +299,6 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
     </div>
 
-    <!-- CALENDARIO COMPARTIDO -->
-    <div id="tab-calendario" class="tab-page">
-      <div class="sec-title" style="margin-bottom:4px">Calendario del equipo</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Disponibilidad de todos · <span id="cal-airport-label" style="color:var(--brand-light)"></span></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="cal-nav-btn" onclick="teamCalPrev()"><i class="ti ti-chevron-left"></i></div>
-        <span id="team-cal-label" style="font-size:13px;font-weight:600"></span>
-        <div class="cal-nav-btn" onclick="teamCalNext()"><i class="ti ti-chevron-right"></i></div>
-      </div>
-      <!-- Legend -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--text2)">
-        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Disponible</div>
-        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block"></span>Libre</div>
-        <div style="display:flex;align-items:center;gap:5px"><div style="display:flex;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;margin-top:2px"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--red);display:inline-block;margin-top:2px"></span></div>Parcial</div>
-        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>No disponible</div>
-      </div>
-      <div id="team-cal-content"></div>
-    </div>
 
     <!-- EQUIPO -->
     <div id="tab-equipo" class="tab-page">
@@ -332,8 +314,7 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
     <button class="bottom-nav-btn active" onclick="showTab('home',0)"><i class="ti ti-home"></i>Inicio</button>
     <button class="bottom-nav-btn" onclick="showTab('indisp',1)"><i class="ti ti-calendar-off"></i>No disponible</button>
     <button class="bottom-nav-btn" onclick="showTab('libres',2)"><i class="ti ti-sun"></i>Mis libres</button>
-    <button class="bottom-nav-btn" onclick="showTab('calendario',3)"><i class="ti ti-calendar-month"></i>Equipo</button>
-    <button class="bottom-nav-btn" onclick="showTab('equipo',4)"><i class="ti ti-users"></i>Personas</button>
+    <button class="bottom-nav-btn" onclick="showTab('equipo',3)"><i class="ti ti-users"></i>Equipo</button>
   </div>
 </div>
 
@@ -440,11 +421,7 @@ let CA=null,mcY,mcM,iTipo="puntual",fDays=[];
 const N=new Date();mcY=N.getFullYear();mcM=N.getMonth();
 const SEMANAS_MOSTRAR = 8; // cuántas semanas mostrar (editable)
 
-function gD(){
-  // Try "rpv" first (mobile key), fallback to "rpv_data" (admin key), then defaults
-  const d=localStorage.getItem("rpv")||localStorage.getItem("rpv_data");
-  return JSON.parse(d||"null")||defD();
-}
+function gD(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||defD();}
 
 function cleanOldLibresPuntuales(data){
   const cutoff = new Date();
@@ -464,7 +441,7 @@ function cleanOldLibresPuntuales(data){
   return data;
 }
 
-function sD(d){d=cleanOldLibresPuntuales(d);d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv",JSON.stringify(d));sync(d);}
+function sD(d){d=cleanOldLibresPuntuales(d);d._lastModified=new Date().toISOString();d._localAgentCount=(d.agents||[]).length;localStorage.setItem("rpv_data",JSON.stringify(d));sync(d);}
 function defD(){return{agents:[
   {id:1,nombre:"Raúl Martínez",aeropuerto:"MAD",tel:"+34 600 111 001",pass:"1234",colorIdx:0,libresSemana:[],diasLibresPuntuales:[]},
   {id:2,nombre:"Andrei Popescu",aeropuerto:"MAD",tel:"+34 600 111 002",pass:"1234",colorIdx:1,libresSemana:[],diasLibresPuntuales:[]},
@@ -498,7 +475,7 @@ function load(){
           remote.nextId=Math.max(remote.nextId||6,...remote.agents.map(a=>a.id+1));
           sync(remote); // push merged back
         }
-        localStorage.setItem("rpv",JSON.stringify(remote));
+        localStorage.setItem("rpv_data",JSON.stringify(remote));
         if(CA){CA=remote.agents.find(a=>a.id===CA.id)||CA;sessionStorage.setItem("rca",JSON.stringify(CA));}
       } else {
         // Local wins — push to sheets
@@ -641,7 +618,7 @@ function showDayPopup(ds){
 }
 
 function initApp(){
-  if(!localStorage.getItem("rpv"))sD(defD());
+  if(!localStorage.getItem("rpv_data"))sD(defD());
   refreshSel();
   const sv=sessionStorage.getItem("rca");
   if(sv){CA=JSON.parse(sv);showApp();}
@@ -678,7 +655,6 @@ function showTab(name,idx){
   if(name==="home")renderHome();
   if(name==="indisp")renderIndisp();
   if(name==="libres")renderLibres();
-  if(name==="calendario")renderTeamCal();
   if(name==="equipo")renderEquipo();
 }
 
@@ -750,7 +726,7 @@ function toggleFijo(dow){
   if(!a.libresSemana)a.libresSemana=[];
   if(a.libresSemana.includes(dow))a.libresSemana=a.libresSemana.filter(x=>x!==dow);
   else a.libresSemana.push(dow);
-  localStorage.setItem("rpv",JSON.stringify(d));
+  localStorage.setItem("rpv_data",JSON.stringify(d));
   renderLibres();
 }
 function guardarFijos(){
@@ -804,7 +780,7 @@ function toggleLibrePuntual(ds,blocked){
   // Already marked → unmark without warning
   if(a.diasLibresPuntuales.includes(ds)){
     a.diasLibresPuntuales=a.diasLibresPuntuales.filter(x=>x!==ds);
-    localStorage.setItem("rpv",JSON.stringify(d));
+    localStorage.setItem("rpv_data",JSON.stringify(d));
     renderSemanas(a);return;
   }
 
@@ -827,7 +803,7 @@ function toggleLibrePuntual(ds,blocked){
         if(!a.libresComentarios)a.libresComentarios={};
         const com=document.getElementById("libre-comment-input");
         if(com)a.libresComentarios[ds]=com.value.trim();
-        localStorage.setItem("rpv",JSON.stringify(d));
+        localStorage.setItem("rpv_data",JSON.stringify(d));
         renderSemanas(a);
       };
       openModal("modal-conflict");
@@ -843,7 +819,7 @@ function toggleLibrePuntual(ds,blocked){
         if(!a.libresComentarios)a.libresComentarios={};
         a.libresComentarios[ds]=com.value.trim();
       }
-      localStorage.setItem("rpv",JSON.stringify(d));
+      localStorage.setItem("rpv_data",JSON.stringify(d));
       renderSemanas(a);
     });
   }
