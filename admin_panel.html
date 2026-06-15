@@ -301,32 +301,7 @@ async function loadFromSheets(){
     document.head.appendChild(s);
   });
 }
-  // Use JSONP instead
-  return new Promise((resolve)=>{
-    const id='rpv_'+Date.now();
-    window[id]=function(data){
-      delete window[id];
-      const s=document.getElementById('jsonp_s');
-      if(s)s.remove();
-      if(data&&data.agents){
-        localStorage.setItem("rpv_data",JSON.stringify(data));
-        document.getElementById("sync-dot").className="sync-dot";
-        document.getElementById("sync-text").textContent="Sincronizado";
-        renderDashboard();
-      }
-      resolve();
-    };
-    const s=document.createElement('script');
-    s.id='jsonp_s';
-    s.src=SHEETS_CONFIG.scriptUrl+'?action=getAll&callback='+id;
-    s.onerror=function(){
-      document.getElementById("sync-dot").className="sync-dot offline";
-      document.getElementById("sync-text").textContent="Sin conexión";
-      resolve();
-    };
-    document.head.appendChild(s);
-  });
-}
+
 
 function getInitials(n){return n.split(" ").slice(0,2).map(x=>x[0]).join("").toUpperCase();}
 function fmtDate(d){return d.toISOString().slice(0,10);}
