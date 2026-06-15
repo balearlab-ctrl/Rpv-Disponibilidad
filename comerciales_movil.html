@@ -288,7 +288,7 @@ const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","
 let currentAgent=null,miniCalYear,miniCalMonth,indispTipo="puntual",fijaDays=[];
 const now=new Date();miniCalYear=now.getFullYear();miniCalMonth=now.getMonth();
 
-const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbz-gg3gKUOdC90WSwvTugsz5flnJxqFgAwQumMGbJx7eT4P2fnYmOiVLXFTabF-hCkg/exec",enabled:true};
+const SHEETS_CONFIG={scriptUrl:"https://script.google.com/macros/s/AKfycbx0cJg7GhLcg68W3dzWc-2gAE6I8v9DhAmuPZlU_oaAbiSQSRlkMkFaBLLcM7BzF3XY/exec",enabled:true};
 async function syncToSheets(data){try{const r=await fetch(SHEETS_CONFIG.scriptUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"saveAll",data})});}catch(e){}}
 async function loadFromSheets(){if(!SHEETS_CONFIG.enabled||!SHEETS_CONFIG.scriptUrl)return;try{const r=await fetch(SHEETS_CONFIG.scriptUrl+"?action=getAll");if(r.ok){const data=await r.json();if(data&&data.agents){localStorage.setItem("rpv_data",JSON.stringify(data));}}}catch(e){}}
 function getData(){return JSON.parse(localStorage.getItem("rpv_data")||"null")||getDefaultData();}
