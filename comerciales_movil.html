@@ -324,18 +324,19 @@ textarea{resize:vertical;min-height:70px;font-size:14px}
 
     <!-- EQUIPO -->
     <div id="tab-equipo" class="tab-page">
+
+      <!-- Mi cuenta arriba siempre visible -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:600"><i class="ti ti-user-circle" style="color:var(--brand);margin-right:6px;font-size:16px"></i>Mi cuenta</div>
+        <button class="btn-outline" style="font-size:12px;padding:6px 14px;gap:6px" onclick="openChangePass()">
+          <i class="ti ti-lock"></i> Cambiar contraseña
+        </button>
+      </div>
+
       <div class="sec-title" style="margin-bottom:12px">Disponibilidad hoy</div>
       <div id="team-today"></div>
       <div class="sec-title" style="margin-top:18px;margin-bottom:12px">Días libres del equipo</div>
       <div id="team-libres"></div>
-
-      <!-- Cambiar contraseña -->
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
-        <div class="sec-title" style="margin-bottom:10px">Mi cuenta</div>
-        <button class="btn-outline" style="width:100%;justify-content:center;gap:8px" onclick="openChangePass()">
-          <i class="ti ti-lock"></i> Cambiar contraseña
-        </button>
-      </div>
     </div>
 
   </div>
