@@ -885,6 +885,8 @@ function endTour(){
   try{if(typeof calTipEl!=="undefined"&&calTipEl)calTipEl.style.display="none";}catch(e){}
   showTab("home", 0);
   localStorage.setItem("rpv_tour_done","1");
+  // After tour, show novedades if any
+  setTimeout(showNovedadesOnLogin, 500);
 }
 
 function resetTour(){
@@ -1054,8 +1056,11 @@ function showApp(){
   document.getElementById("hdr-name").textContent=CA.nombre.split(" ")[0];
   document.getElementById("hdr-airport").textContent=CA.aeropuerto==="MAD"?"Madrid Barajas":"Barcelona El Prat";
   renderHome();
-  showNovedadesOnLogin();
-  checkAutoTour();
+  checkAutoTour(); // tour first if first time
+  // novedades shown after tour, or immediately if tour already done
+  if(localStorage.getItem("rpv_tour_done")){
+    showNovedadesOnLogin();
+  }
 }
 function showTab(name,idx){
   document.querySelectorAll(".tab-page").forEach(el=>el.classList.remove("active"));
